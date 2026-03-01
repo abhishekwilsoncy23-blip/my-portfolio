@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UNISCAN PRO</title>
+    <title>UNISCAN SUITE | PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script async src="https://docs.opencv.org/4.5.4/opencv.js" onload="cvReady()"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        body { background: #000; color: white; overflow: hidden; font-family: sans-serif; }
-        .screen { position: absolute; inset: 0; display: none; flex-direction: column; background: #000; }
+        body { background: #0a0a0c; color: white; overflow: hidden; font-family: sans-serif; }
+        .screen { position: absolute; inset: 0; display: none; flex-direction: column; background: #0a0a0c; }
         .active { display: flex; }
+        .suite-card { border: 1px solid #222; transition: all 0.2s; }
+        .suite-card:active { border-color: #3b82f6; transform: scale(0.98); }
         
-        #focus-ring {
-            position: absolute; width: 80px; height: 80px; border: 2px solid #3b82f6;
-            border-radius: 50%; pointer-events: none; display: none;
-            transform: translate(-50%, -50%); animation: focus-ping 0.4s ease-out;
-        }
+        /* Scanner Specific */
+        #focus-ring { position: absolute; width: 80px; height: 80px; border: 2px solid #3b82f6; border-radius: 50%; pointer-events: none; display: none; transform: translate(-50%, -50%); animation: focus-ping 0.4s ease-out; }
         @keyframes focus-ping { 0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-
         #canvas-wrapper { position: relative; display: inline-block; }
         .handle { position: absolute; width: 44px; height: 44px; background: rgba(59, 130, 246, 0.5); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); touch-action: none; z-index: 100; }
         .thumb-card { width: 100px; height: 130px; background: #111; border-radius: 12px; flex-shrink: 0; overflow: hidden; border: 1px solid #333; }
@@ -29,33 +29,45 @@
 </head>
 <body>
 
-    <div id="screen-camera" class="screen active">
+    <div id="screen-home" class="screen active p-8">
+        <h1 class="text-3xl font-black text-white mt-10 mb-2">UNISCAN <span class="text-blue-500">SUITE</span></h1>
+        <p class="text-zinc-500 mb-10 text-sm">Local Browser Document Suite</p>
+        <div class="grid grid-cols-2 gap-4">
+            <div onclick="switchScreen('screen-camera')" class="suite-card bg-zinc-900 p-6 rounded-3xl cursor-pointer col-span-2 flex items-center gap-4">
+                <i class="fas fa-camera text-3xl text-blue-500"></i>
+                <div><h2 class="font-bold">Scanner</h2><p class="text-xs text-zinc-400">Capture & Warp</p></div>
+            </div>
+            <div onclick="switchScreen('screen-merger')" class="suite-card bg-zinc-900 p-6 rounded-3xl cursor-pointer">
+                <i class="fas fa-layer-group text-3xl text-emerald-500 mb-3"></i>
+                <h2 class="font-bold">Merger</h2><p class="text-xs text-zinc-400">Combine PDF</p>
+            </div>
+            <div onclick="switchScreen('screen-converter')" class="suite-card bg-zinc-900 p-6 rounded-3xl cursor-pointer">
+                <i class="fas fa-file-word text-3xl text-orange-500 mb-3"></i>
+                <h2 class="font-bold">Converter</h2><p class="text-xs text-zinc-400">DOCX to PDF</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-camera" class="screen">
         <div class="flex-1 relative" onclick="triggerManualFocus(event)">
             <video id="v-feed" autoplay playsinline class="w-full h-full object-cover"></video>
             <div id="focus-ring"></div>
             <div class="absolute top-10 left-6 right-6 flex justify-between items-center">
-                <span class="bg-black/40 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">Manual Scan</span>
-                <button onclick="toggleTorch()" id="torch-btn" class="text-white text-xl bg-black/40 p-3 rounded-full">
-                    <i class="fas fa-bolt"></i>
-                </button>
+                <button onclick="switchScreen('screen-home')" class="bg-black/40 p-3 rounded-full"><i class="fas fa-times"></i></button>
+                <button onclick="toggleTorch()" id="torch-btn" class="text-white text-xl bg-black/40 p-3 rounded-full"><i class="fas fa-bolt"></i></button>
             </div>
         </div>
         <div class="h-40 bg-black flex items-center justify-around px-10">
-            <button onclick="location.reload()" class="text-zinc-500"><i class="fas fa-redo"></i></button>
             <div onclick="takeSnapshot()" class="w-20 h-20 border-4 border-white rounded-full p-1 cursor-pointer">
                 <div class="w-full h-full bg-white rounded-full active:scale-90 transition"></div>
-            </div>
-            <div class="relative">
-                <i class="fas fa-file-alt text-2xl text-zinc-500"></i>
-                <div id="batch-count" class="absolute -top-2 -right-2 bg-blue-600 w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold">0</div>
             </div>
         </div>
     </div>
 
     <div id="screen-crop" class="screen">
         <div class="h-16 flex justify-between items-center px-6 bg-zinc-900">
-            <button onclick="switchScreen('screen-camera')" class="text-zinc-400 font-bold text-xs uppercase">Back</button>
-            <button onclick="processWarp()" class="bg-blue-600 px-6 py-2 rounded-full text-xs font-bold uppercase">Save Page</button>
+            <button onclick="switchScreen('screen-camera')" class="text-zinc-400 font-bold text-xs">BACK</button>
+            <button onclick="processWarp()" class="bg-blue-600 px-6 py-2 rounded-full text-xs font-bold">SAVE PAGE</button>
         </div>
         <div class="flex-1 flex items-center justify-center p-4 bg-zinc-950">
             <div id="canvas-wrapper">
@@ -73,13 +85,33 @@
 
     <div id="screen-review" class="screen">
         <div class="p-8 flex-1 overflow-y-auto">
-            <h2 class="text-2xl font-black mb-6">Batch Results</h2>
+            <h2 class="text-2xl font-black mb-6">Batch Review</h2>
             <div id="review-grid" class="flex flex-wrap gap-4"></div>
         </div>
-        <div class="p-8 bg-zinc-900 border-t border-white/5 flex gap-4">
-            <button onclick="switchScreen('screen-camera')" class="flex-1 bg-zinc-800 py-4 rounded-full font-bold text-sm">SCAN MORE</button>
+        <div class="p-8 bg-zinc-900 flex gap-4">
+            <button onclick="switchScreen('screen-camera')" class="flex-1 bg-zinc-800 py-4 rounded-full font-bold text-sm">ADD MORE</button>
             <button onclick="generateFinalPDF()" class="flex-1 bg-blue-600 py-4 rounded-full font-bold text-sm">FINISH PDF</button>
         </div>
+    </div>
+
+    <div id="screen-merger" class="screen p-8">
+        <button onclick="switchScreen('screen-home')" class="text-left mb-6"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="text-2xl font-bold mb-4">PDF Merger</h2>
+        <input type="file" id="pdf-input" multiple accept=".pdf" class="hidden">
+        <button onclick="document.getElementById('pdf-input').click()" class="bg-zinc-800 p-10 rounded-2xl border-2 border-dashed border-zinc-600 text-center mb-6">
+            <i class="fas fa-upload text-4xl text-zinc-500 mb-3"></i><br>Select PDFs
+        </button>
+        <button onclick="mergePDFs()" class="w-full bg-emerald-600 py-4 rounded-full font-bold">MERGE FILES</button>
+    </div>
+
+    <div id="screen-converter" class="screen p-8">
+        <button onclick="switchScreen('screen-home')" class="text-left mb-6"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="text-2xl font-bold mb-4">DOCX to PDF</h2>
+        <input type="file" id="docx-input" accept=".docx" class="hidden">
+        <button onclick="document.getElementById('docx-input').click()" class="bg-zinc-800 p-10 rounded-2xl border-2 border-dashed border-zinc-600 text-center mb-6">
+            <i class="fas fa-file-word text-4xl text-orange-500 mb-3"></i><br>Select DOCX
+        </button>
+        <button onclick="convertDocx()" class="w-full bg-orange-600 py-4 rounded-full font-bold">CONVERT</button>
     </div>
 
     <script>
@@ -89,21 +121,22 @@
         let videoTrack = null;
         let torchOn = false;
 
-        function cvReady() { startCamera(); }
+        function cvReady() { startScannerCamera(); }
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-        async function startCamera() {
+        // --- SCANNER LOGIC ---
+        async function startScannerCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 4096 }, height: { ideal: 2160 },
-                        focusMode: "continuous"
-                    } 
+                    video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 }, focusMode: "continuous" } 
                 });
                 const video = document.getElementById('v-feed');
                 video.srcObject = stream;
                 videoTrack = stream.getVideoTracks()[0];
-            } catch (e) { alert("Camera error: " + e); }
+            } catch (e) { console.error(e); }
         }
 
         async function toggleTorch() {
@@ -115,8 +148,7 @@
 
         function triggerManualFocus(e) {
             const ring = document.getElementById('focus-ring');
-            ring.style.left = e.clientX + 'px';
-            ring.style.top = e.clientY + 'px';
+            ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
             ring.style.display = 'block';
             setTimeout(() => ring.style.display = 'none', 500);
             if (videoTrack) videoTrack.applyConstraints({ advanced: [{ focusMode: "auto" }] });
@@ -175,29 +207,21 @@
 
         function processWarp() {
             const canvas = document.getElementById('image-canvas');
-            let src = cv.imread(canvas);
-            let dst = new cv.Mat();
+            let src = cv.imread(canvas); let dst = new cv.Mat();
             let srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, [points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, points[3].x, points[3].y]);
             let dstPts = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 595, 0, 595, 842, 0, 842]);
             let M = cv.getPerspectiveTransform(srcPts, dstPts);
             cv.warpPerspective(src, dst, M, new cv.Size(595, 842));
-            
-            const outCanvas = document.createElement('canvas');
-            cv.imshow(outCanvas, dst);
+            const outCanvas = document.createElement('canvas'); cv.imshow(outCanvas, dst);
             batchPages.push(outCanvas.toDataURL());
-            
             src.delete(); dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
-            document.getElementById('batch-count').innerText = batchPages.length;
-            renderReview();
-            switchScreen('screen-review');
+            renderReview(); switchScreen('screen-review');
         }
 
         function renderReview() {
-            const grid = document.getElementById('review-grid');
-            grid.innerHTML = '';
-            batchPages.forEach((src, i) => {
-                const div = document.createElement('div');
-                div.className = 'thumb-card';
+            const grid = document.getElementById('review-grid'); grid.innerHTML = '';
+            batchPages.forEach(src => {
+                const div = document.createElement('div'); div.className = 'thumb-card';
                 div.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
                 grid.appendChild(div);
             });
@@ -210,14 +234,45 @@
                 if(i > 0) pdf.addPage();
                 pdf.addImage(img, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
             });
-            pdf.save("Uniscan_Batch.pdf");
-            batchPages = [];
-            switchScreen('screen-camera');
+            pdf.save("Uniscan_Batch.pdf"); batchPages = []; switchScreen('screen-home');
         }
 
-        function switchScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        // --- MERGER LOGIC ---
+        async function mergePDFs() {
+            const files = document.getElementById('pdf-input').files;
+            if (files.length < 2) return alert("Select at least 2 files");
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            for (let file of files) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach(page => mergedPdf.addPage(page));
+            }
+            const mergedPdfBytes = await mergedPdf.save();
+            downloadFile(mergedPdfBytes, "merged.pdf", "application/pdf");
+        }
+
+        // --- CONVERTER LOGIC ---
+        function convertDocx() {
+            const file = document.getElementById('docx-input').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const result = await mammoth.extractRawText({arrayBuffer: event.target.result});
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.text(result.value, 10, 10);
+                doc.save("converted.pdf");
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function downloadFile(bytes, filename, mimeType) {
+            const blob = new Blob([bytes], {type: mimeType});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
         }
     </script>
 </body>
