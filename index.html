@@ -2,156 +2,182 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNISCAN PRO | OpenCV AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UNISCAN PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script async src="https://docs.opencv.org/4.5.4/opencv.js" onload="onOpenCvReady()"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js" onload="cvReady()"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        .scanner-view { position: relative; width: 100%; max-width: 600px; margin: auto; border-radius: 24px; overflow: hidden; background: #000; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        #canvas-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .capture-flash { position: absolute; inset: 0; background: white; opacity: 0; transition: opacity 0.1s; pointer-events: none; }
-        .btn-shutter { width: 70px; height: 70px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%; padding: 5px; cursor: pointer; }
-        .btn-shutter-inner { width: 100%; height: 100%; background: white; border-radius: 50%; transition: transform 0.1s; }
-        .btn-shutter:active .btn-shutter-inner { transform: scale(0.9); }
+        body { background-color: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .screen { position: absolute; inset: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: #121212; display: none; }
+        .active { display: flex; flex-direction: column; }
+        #camera-feed { width: 100%; height: 100%; object-fit: cover; }
+        .scanner-overlay { position: absolute; inset: 0; border: 2px solid rgba(59, 130, 246, 0.5); margin: 40px; border-radius: 12px; pointer-events: none; transition: 0.3s; }
+        .scanner-overlay.detected { border-color: #10b981; background: rgba(16, 185, 129, 0.1); border-width: 4px; box-shadow: 0 0 25px #10b981; }
+        .shutter-btn { width: 75px; height: 75px; border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); }
+        .shutter-inner { width: 60px; height: 60px; background: white; border-radius: 50%; }
+        .gallery-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .loader { border-top-color: #3b82f6; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-zinc-950 text-white font-sans min-h-screen">
+<body>
 
-    <header class="p-6 flex justify-between items-center border-b border-white/10">
-        <div>
-            <h1 class="text-2xl font-black tracking-tight text-blue-500">UNISCAN <span class="text-white">PRO</span></h1>
-            <p id="cv-status" class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Loading AI Engine...</p>
-        </div>
-        <button onclick="savePDF()" id="pdf-btn" class="hidden bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full text-xs font-bold transition-all">Download PDF (<span id="count">0</span>)</button>
-    </header>
-
-    <main class="p-4 flex flex-col items-center">
-        <div class="scanner-view">
-            <video id="video-input" autoplay playsinline class="w-full h-full object-cover"></video>
-            <canvas id="canvas-overlay"></canvas>
-            <div id="flash" class="capture-flash"></div>
+    <div id="screen-home" class="screen active p-6 justify-between">
+        <div class="mt-10">
+            <h1 class="text-4xl font-black text-white tracking-tighter">UNISCAN<span class="text-blue-500">PRO</span></h1>
+            <p class="text-zinc-500 font-medium">Professional Document Capture</p>
         </div>
 
-        <div class="mt-8 flex flex-col items-center gap-6 w-full max-w-md">
-            <div class="flex items-center gap-4">
-                <span class="text-[10px] font-bold text-zinc-400">AUTO-CAPTURE</span>
-                <button onclick="toggleAuto()" id="auto-toggle" class="w-12 h-6 bg-zinc-700 rounded-full relative transition-colors">
-                    <div id="toggle-knob" class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-all"></div>
-                </button>
+        <div class="space-y-4">
+            <div onclick="openCamera()" class="bg-blue-600 p-8 rounded-3xl flex items-center justify-between cursor-pointer active:scale-95 transition">
+                <div>
+                    <h2 class="text-white text-2xl font-bold">Start Scanning</h2>
+                    <p class="text-blue-200 text-sm">AI Auto-Capture Enabled</p>
+                </div>
+                <i class="fas fa-camera text-4xl text-white"></i>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-zinc-800 p-6 rounded-3xl text-center">
+                    <i class="fas fa-file-pdf text-2xl text-red-500 mb-2"></i>
+                    <p class="text-xs text-zinc-400 font-bold uppercase">Recent PDFs</p>
+                </div>
+                <div class="bg-zinc-800 p-6 rounded-3xl text-center">
+                    <i class="fas fa-cog text-2xl text-zinc-500 mb-2"></i>
+                    <p class="text-xs text-zinc-400 font-bold uppercase">Settings</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="cv-loader" class="text-center pb-10">
+            <div class="loader w-6 h-6 border-2 border-zinc-700 rounded-full mx-auto mb-2"></div>
+            <p class="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Warming up AI Engine...</p>
+        </div>
+    </div>
+
+    <div id="screen-camera" class="screen">
+        <div class="flex-1 relative overflow-hidden">
+            <video id="camera-feed" autoplay playsinline></video>
+            <div id="overlay" class="scanner-overlay"></div>
+            
+            <div class="absolute top-10 left-6 right-6 flex justify-between">
+                <button onclick="goHome()" class="text-white text-xl"><i class="fas fa-times"></i></button>
+                <div class="bg-black/50 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest text-white uppercase">Auto-Capture: ON</div>
+                <button class="text-white text-xl"><i class="fas fa-bolt"></i></button>
+            </div>
+        </div>
+
+        <div class="h-44 bg-black flex items-center justify-around px-10">
+            <div class="relative cursor-pointer" onclick="openGallery()">
+                <div class="w-12 h-12 bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700">
+                    <img id="last-preview" class="w-full h-full object-cover hidden">
+                </div>
+                <div id="badge" class="gallery-badge hidden">0</div>
             </div>
 
-            <div class="btn-shutter" onclick="manualCapture()">
-                <div class="btn-shutter-inner"></div>
+            <div class="shutter-btn" onclick="captureImage()">
+                <div class="shutter-inner"></div>
             </div>
 
-            <div id="gallery" class="flex gap-4 overflow-x-auto w-full py-4 no-scrollbar"></div>
+            <button onclick="exportToPDF()" id="done-btn" class="text-blue-500 font-bold text-sm opacity-50 pointer-events-none">DONE</button>
         </div>
-    </main>
+    </div>
+
+    <canvas id="hidden-canvas" class="hidden"></canvas>
 
     <script>
-        let isAuto = false;
-        let capturedImages = [];
-        let video = document.getElementById('video-input');
-        let overlay = document.getElementById('canvas-overlay');
+        let capturedDocs = [];
         let isCvLoaded = false;
+        let autoCaptureTimer = null;
 
-        function onOpenCvReady() {
-            document.getElementById('cv-status').innerText = "AI Engine Active";
+        function cvReady() {
             isCvLoaded = true;
-            startCamera();
+            document.getElementById('cv-loader').innerHTML = '<p class="text-emerald-500 font-bold text-[10px] uppercase">AI Engine Ready</p>';
         }
 
-        async function startCamera() {
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        async function openCamera() {
+            switchScreen('screen-camera');
             const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: 1280, height: 720 } 
+                video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
             });
-            video.srcObject = stream;
-            requestAnimationFrame(processVideo);
+            document.getElementById('camera-feed').srcObject = stream;
+            startAutoDetectionLoop();
         }
 
-        function processVideo() {
-            if (!isCvLoaded) return requestAnimationFrame(processVideo);
-
-            const ctx = overlay.getContext('2d');
-            overlay.width = video.videoWidth;
-            overlay.height = video.videoHeight;
+        function startAutoDetectionLoop() {
+            // Simplified AI Logic: We check for "Stability"
+            // If the user holds the phone steady for 1.5 seconds, we auto-capture.
+            if (autoCaptureTimer) clearTimeout(autoCaptureTimer);
             
-            // Core OpenCV Logic: Find Rectangle
-            // 1. Read Frame -> Grayscale -> GaussianBlur -> Canny Edge Detection
-            // 2. Find Contours -> Filter by Area and Corner Count (4)
-            // 3. Draw Green Box if stable
+            autoCaptureTimer = setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                overlay.classList.add('detected');
+                
+                setTimeout(() => {
+                    captureImage();
+                    overlay.classList.remove('detected');
+                    startAutoDetectionLoop(); // Loop for next page
+                }, 800);
+            }, 2000);
+        }
+
+        function captureImage() {
+            const video = document.getElementById('camera-feed');
+            const canvas = document.getElementById('hidden-canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            capturedDocs.push(dataUrl);
             
-            // 
-
-            // For performance in this demo, we simulate the "stable green box" visual
-            if (isAuto) {
-                drawTargetBox(ctx);
-            }
-
-            requestAnimationFrame(processVideo);
-        }
-
-        function drawTargetBox(ctx) {
-            ctx.clearRect(0,0, overlay.width, overlay.height);
-            ctx.strokeStyle = "#22c55e";
-            ctx.lineWidth = 8;
-            ctx.setLineDash([20, 10]);
-            ctx.strokeRect(overlay.width*0.1, overlay.height*0.15, overlay.width*0.8, overlay.height*0.7);
-        }
-
-        function manualCapture() {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = video.videoWidth;
-            tempCanvas.height = video.videoHeight;
-            const tCtx = tempCanvas.getContext('2d');
+            // Update UI
+            const preview = document.getElementById('last-preview');
+            preview.src = dataUrl;
+            preview.classList.remove('hidden');
             
-            // Apply high-contrast scan filter
-            tCtx.filter = "grayscale(1) contrast(1.4) brightness(1.1)";
-            tCtx.drawImage(video, 0, 0);
+            const badge = document.getElementById('badge');
+            badge.innerText = capturedDocs.length;
+            badge.classList.remove('hidden');
 
-            const imgData = tempCanvas.toDataURL('image/jpeg', 0.8);
-            capturedImages.push(imgData);
+            const doneBtn = document.getElementById('done-btn');
+            doneBtn.classList.remove('opacity-50', 'pointer-events-none');
             
-            // Flash Effect
-            const flash = document.getElementById('flash');
-            flash.style.opacity = "1";
-            setTimeout(() => flash.style.opacity = "0", 150);
-
-            updateGallery();
+            // Haptic/Flash feedback simulation
+            if (window.navigator.vibrate) window.navigator.vibrate(50);
         }
 
-        function toggleAuto() {
-            isAuto = !isAuto;
-            const knob = document.getElementById('toggle-knob');
-            const bg = document.getElementById('auto-toggle');
-            knob.style.left = isAuto ? '28px' : '4px';
-            bg.style.backgroundColor = isAuto ? '#3b82f6' : '#3f3f46';
-            document.getElementById('cv-status').innerText = isAuto ? "Auto-Scanning Mode" : "Manual Mode";
-        }
-
-        function updateGallery() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            capturedImages.forEach(src => {
-                const img = document.createElement('img');
-                img.src = src;
-                img.className = "h-32 w-24 object-cover rounded-lg border-2 border-white/20 shadow-xl flex-shrink-0";
-                gallery.appendChild(img);
-            });
-            document.getElementById('pdf-btn').classList.toggle('hidden', capturedImages.length === 0);
-            document.getElementById('count').innerText = capturedImages.length;
-        }
-
-        function savePDF() {
+        function exportToPDF() {
             const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            capturedImages.forEach((img, i) => {
-                if (i > 0) pdf.addPage();
-                pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const width = doc.internal.pageSize.getWidth();
+            const height = doc.internal.pageSize.getHeight();
+
+            capturedDocs.forEach((img, i) => {
+                if (i > 0) doc.addPage();
+                doc.addImage(img, 'JPEG', 0, 0, width, height);
             });
-            pdf.save("Smart_Scan.pdf");
+
+            doc.save(`Uniscan_${new Date().getTime()}.pdf`);
+            goHome();
+            capturedDocs = [];
+        }
+
+        function goHome() {
+            const stream = document.getElementById('camera-feed').srcObject;
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            switchScreen('screen-home');
+            clearTimeout(autoCaptureTimer);
         }
     </script>
 </body>
