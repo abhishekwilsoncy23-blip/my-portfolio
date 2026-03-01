@@ -3,100 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UNISCAN PRO</title>
+    <title>UNISCAN PRO | Batch Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script async src="https://docs.opencv.org/4.5.4/opencv.js" onload="cvReady()"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        body { background-color: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .screen { position: absolute; inset: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: #121212; display: none; }
-        .active { display: flex; flex-direction: column; }
-        #camera-feed { width: 100%; height: 100%; object-fit: cover; }
-        .scanner-overlay { position: absolute; inset: 0; border: 2px solid rgba(59, 130, 246, 0.5); margin: 40px; border-radius: 12px; pointer-events: none; transition: 0.3s; }
-        .scanner-overlay.detected { border-color: #10b981; background: rgba(16, 185, 129, 0.1); border-width: 4px; box-shadow: 0 0 25px #10b981; }
-        .shutter-btn { width: 75px; height: 75px; border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); }
-        .shutter-inner { width: 60px; height: 60px; background: white; border-radius: 50%; }
-        .gallery-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .loader { border-top-color: #3b82f6; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background: #000; color: white; overflow: hidden; font-family: sans-serif; }
+        .screen { position: absolute; inset: 0; display: none; flex-direction: column; background: #000; }
+        .active { display: flex; }
+        
+        /* Crop Area */
+        #crop-ui-container { position: relative; flex: 1; background: #0a0a0a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #canvas-wrapper { position: relative; display: inline-block; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        #image-canvas { max-width: 100%; max-height: 100%; display: block; }
+        
+        /* Handles */
+        .handle { 
+            position: absolute; width: 40px; height: 40px; 
+            background: rgba(59, 130, 246, 0.5); border: 2px solid #fff; 
+            border-radius: 50%; transform: translate(-50%, -50%); 
+            touch-action: none; z-index: 100;
+        }
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        
+        /* Thumbnails */
+        .thumb-card { width: 80px; height: 110px; background: #222; border-radius: 8px; flex-shrink: 0; position: relative; border: 2px solid #444; }
+        .thumb-img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+        .delete-btn { position: absolute; -top: 8px; -right: 8px; background: #ef4444; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <div id="screen-home" class="screen active p-6 justify-between">
-        <div class="mt-10">
-            <h1 class="text-4xl font-black text-white tracking-tighter">UNISCAN<span class="text-blue-500">PRO</span></h1>
-            <p class="text-zinc-500 font-medium">Professional Document Capture</p>
+    <div id="screen-home" class="screen active justify-center items-center p-10">
+        <div class="text-center mb-12">
+            <i class="fas fa-layer-group text-6xl text-blue-500 mb-6"></i>
+            <h1 class="text-5xl font-black italic tracking-tighter">UNISCAN</h1>
+            <p class="text-zinc-500 font-bold uppercase text-[10px] tracking-widest mt-2">Batch Processing Engine</p>
         </div>
-
-        <div class="space-y-4">
-            <div onclick="openCamera()" class="bg-blue-600 p-8 rounded-3xl flex items-center justify-between cursor-pointer active:scale-95 transition">
-                <div>
-                    <h2 class="text-white text-2xl font-bold">Start Scanning</h2>
-                    <p class="text-blue-200 text-sm">AI Auto-Capture Enabled</p>
-                </div>
-                <i class="fas fa-camera text-4xl text-white"></i>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-zinc-800 p-6 rounded-3xl text-center">
-                    <i class="fas fa-file-pdf text-2xl text-red-500 mb-2"></i>
-                    <p class="text-xs text-zinc-400 font-bold uppercase">Recent PDFs</p>
-                </div>
-                <div class="bg-zinc-800 p-6 rounded-3xl text-center">
-                    <i class="fas fa-cog text-2xl text-zinc-500 mb-2"></i>
-                    <p class="text-xs text-zinc-400 font-bold uppercase">Settings</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="cv-loader" class="text-center pb-10">
-            <div class="loader w-6 h-6 border-2 border-zinc-700 rounded-full mx-auto mb-2"></div>
-            <p class="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Warming up AI Engine...</p>
-        </div>
+        
+        <button onclick="openCamera()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">
+            NEW BATCH SCAN
+        </button>
+        
+        <p id="engine-status" class="mt-8 text-[10px] font-bold text-zinc-700 uppercase tracking-widest italic">Core Warming Up...</p>
     </div>
 
     <div id="screen-camera" class="screen">
-        <div class="flex-1 relative overflow-hidden">
-            <video id="camera-feed" autoplay playsinline></video>
-            <div id="overlay" class="scanner-overlay"></div>
-            
-            <div class="absolute top-10 left-6 right-6 flex justify-between">
-                <button onclick="goHome()" class="text-white text-xl"><i class="fas fa-times"></i></button>
-                <div class="bg-black/50 px-4 py-1 rounded-full text-[10px] font-bold tracking-widest text-white uppercase">Auto-Capture: ON</div>
-                <button class="text-white text-xl"><i class="fas fa-bolt"></i></button>
-            </div>
+        <div class="flex-1 relative">
+            <video id="v-feed" autoplay playsinline class="w-full h-full object-cover"></video>
         </div>
-
-        <div class="h-44 bg-black flex items-center justify-around px-10">
-            <div class="relative cursor-pointer" onclick="openGallery()">
-                <div class="w-12 h-12 bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700">
-                    <img id="last-preview" class="w-full h-full object-cover hidden">
-                </div>
-                <div id="badge" class="gallery-badge hidden">0</div>
+        <div class="h-40 bg-black flex items-center justify-around px-10">
+            <button onclick="goHome()" class="text-zinc-500 text-xl"><i class="fas fa-times"></i></button>
+            <div onclick="takeSnapshot()" class="w-20 h-20 border-4 border-white rounded-full p-1 cursor-pointer">
+                <div class="w-full h-full bg-white rounded-full"></div>
             </div>
-
-            <div class="shutter-btn" onclick="captureImage()">
-                <div class="shutter-inner"></div>
+            <div class="relative">
+                <i class="fas fa-images text-2xl text-zinc-500"></i>
+                <div id="batch-count" class="absolute -top-2 -right-2 bg-blue-600 w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold">0</div>
             </div>
-
-            <button onclick="exportToPDF()" id="done-btn" class="text-blue-500 font-bold text-sm opacity-50 pointer-events-none">DONE</button>
         </div>
     </div>
 
-    <canvas id="hidden-canvas" class="hidden"></canvas>
+    <div id="screen-crop" class="screen">
+        <div class="h-16 flex justify-between items-center px-6 bg-zinc-900">
+            <button onclick="openCamera()" class="text-zinc-400 font-bold text-xs uppercase">Discard</button>
+            <span class="text-[10px] font-black tracking-widest uppercase">Manual Edge Selection</span>
+            <button onclick="processWarp()" class="text-blue-500 font-bold text-xs uppercase">Keep Page</button>
+        </div>
+
+        <div id="crop-ui-container">
+            <div id="canvas-wrapper">
+                <canvas id="image-canvas"></canvas>
+                <svg><path id="guide-path" fill="rgba(59,130,246,0.1)" stroke="#3b82f6" stroke-width="3" /></svg>
+                <div id="p0" class="handle" style="top:5%; left:5%;"></div>
+                <div id="p1" class="handle" style="top:5%; left:95%;"></div>
+                <div id="p2" class="handle" style="top:95%; left:95%;"></div>
+                <div id="p3" class="handle" style="top:95%; left:5%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-review" class="screen">
+        <div class="p-8 flex-1 overflow-y-auto">
+            <h2 class="text-2xl font-black mb-6">Review Batch</h2>
+            <div id="review-grid" class="grid grid-cols-3 gap-4">
+                </div>
+        </div>
+        <div class="p-8 bg-zinc-900 border-t border-white/5 flex gap-4">
+            <button onclick="openCamera()" class="flex-1 bg-zinc-800 py-4 rounded-xl font-bold text-sm">ADD MORE</button>
+            <button onclick="generateFinalPDF()" class="flex-1 bg-blue-600 py-4 rounded-xl font-bold text-sm shadow-lg">GENERATE PDF</button>
+        </div>
+    </div>
 
     <script>
-        let capturedDocs = [];
-        let isCvLoaded = false;
-        let autoCaptureTimer = null;
+        let rawImg = null;
+        let points = [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ];
+        let batchPages = [];
 
-        function cvReady() {
-            isCvLoaded = true;
-            document.getElementById('cv-loader').innerHTML = '<p class="text-emerald-500 font-bold text-[10px] uppercase">AI Engine Ready</p>';
-        }
+        function cvReady() { document.getElementById('engine-status').innerText = "AI CORE ONLINE"; }
 
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -104,80 +110,112 @@
         }
 
         async function openCamera() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            document.getElementById('v-feed').srcObject = stream;
+            document.getElementById('batch-count').innerText = batchPages.length;
             switchScreen('screen-camera');
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
-            });
-            document.getElementById('camera-feed').srcObject = stream;
-            startAutoDetectionLoop();
         }
 
-        function startAutoDetectionLoop() {
-            // Simplified AI Logic: We check for "Stability"
-            // If the user holds the phone steady for 1.5 seconds, we auto-capture.
-            if (autoCaptureTimer) clearTimeout(autoCaptureTimer);
-            
-            autoCaptureTimer = setTimeout(() => {
-                const overlay = document.getElementById('overlay');
-                overlay.classList.add('detected');
-                
-                setTimeout(() => {
-                    captureImage();
-                    overlay.classList.remove('detected');
-                    startAutoDetectionLoop(); // Loop for next page
-                }, 800);
-            }, 2000);
+        function takeSnapshot() {
+            const video = document.getElementById('v-feed');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            rawImg = new Image();
+            rawImg.src = canvas.toDataURL('image/jpeg');
+            rawImg.onload = () => {
+                initCropView();
+                switchScreen('screen-crop');
+            };
         }
 
-        function captureImage() {
-            const video = document.getElementById('camera-feed');
-            const canvas = document.getElementById('hidden-canvas');
+        function initCropView() {
+            const canvas = document.getElementById('image-canvas');
             const ctx = canvas.getContext('2d');
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-            capturedDocs.push(dataUrl);
-            
-            // Update UI
-            const preview = document.getElementById('last-preview');
-            preview.src = dataUrl;
-            preview.classList.remove('hidden');
-            
-            const badge = document.getElementById('badge');
-            badge.innerText = capturedDocs.length;
-            badge.classList.remove('hidden');
-
-            const doneBtn = document.getElementById('done-btn');
-            doneBtn.classList.remove('opacity-50', 'pointer-events-none');
-            
-            // Haptic/Flash feedback simulation
-            if (window.navigator.vibrate) window.navigator.vibrate(50);
+            const wrap = document.getElementById('canvas-wrapper');
+            const scale = Math.min((window.innerWidth*0.9)/rawImg.width, (window.innerHeight*0.7)/rawImg.height);
+            canvas.width = rawImg.width * scale; canvas.height = rawImg.height * scale;
+            ctx.drawImage(rawImg, 0, 0, canvas.width, canvas.height);
+            wrap.style.width = canvas.width+'px'; wrap.style.height = canvas.height+'px';
+            resetHandles(canvas.width, canvas.height);
         }
 
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const width = doc.internal.pageSize.getWidth();
-            const height = doc.internal.pageSize.getHeight();
+        function resetHandles(w, h) {
+            updateHandle(0, 40, 40); updateHandle(1, w-40, 40);
+            updateHandle(2, w-40, h-40); updateHandle(3, 40, h-40);
+            drawLines();
+        }
 
-            capturedDocs.forEach((img, i) => {
-                if (i > 0) doc.addPage();
-                doc.addImage(img, 'JPEG', 0, 0, width, height);
+        function updateHandle(i, x, y) {
+            const h = document.getElementById('p'+i);
+            h.style.left = x+'px'; h.style.top = y+'px';
+            points[i] = {x, y};
+        }
+
+        let activeHandle = null;
+        document.addEventListener('pointerdown', e => { if(e.target.classList.contains('handle')) activeHandle = e.target; });
+        document.addEventListener('pointermove', e => {
+            if(!activeHandle) return;
+            const rect = document.getElementById('canvas-wrapper').getBoundingClientRect();
+            let x = e.clientX - rect.left, y = e.clientY - rect.top;
+            activeHandle.style.left = x+'px'; activeHandle.style.top = y+'px';
+            points[activeHandle.id.replace('p','')] = {x, y};
+            drawLines();
+        });
+        document.addEventListener('pointerup', () => activeHandle = null);
+
+        function drawLines() {
+            const d = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`;
+            document.getElementById('guide-path').setAttribute('d', d);
+        }
+
+        // OpenCV PERSPECTIVE WARP
+        function processWarp() {
+            const canvas = document.getElementById('image-canvas');
+            let src = cv.imread(canvas);
+            let dst = new cv.Mat();
+            let srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, [points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, points[3].x, points[3].y]);
+            let dstPts = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, canvas.width, 0, canvas.width, canvas.height, 0, canvas.height]);
+            let M = cv.getPerspectiveTransform(srcPts, dstPts);
+            cv.warpPerspective(src, dst, M, new cv.Size(canvas.width, canvas.height));
+            
+            const outCanvas = document.createElement('canvas');
+            cv.imshow(outCanvas, dst);
+            batchPages.push(outCanvas.toDataURL());
+            
+            src.delete(); dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
+            renderReview();
+            switchScreen('screen-review');
+        }
+
+        function renderReview() {
+            const grid = document.getElementById('review-grid');
+            grid.innerHTML = '';
+            batchPages.forEach((src, i) => {
+                const div = document.createElement('div');
+                div.className = 'thumb-card';
+                div.innerHTML = `<img src="${src}" class="thumb-img"><div onclick="removePage(${i})" class="delete-btn"><i class="fas fa-times"></i></div>`;
+                grid.appendChild(div);
             });
-
-            doc.save(`Uniscan_${new Date().getTime()}.pdf`);
-            goHome();
-            capturedDocs = [];
         }
 
-        function goHome() {
-            const stream = document.getElementById('camera-feed').srcObject;
-            if (stream) stream.getTracks().forEach(track => track.stop());
-            switchScreen('screen-home');
-            clearTimeout(autoCaptureTimer);
+        function removePage(i) { batchPages.splice(i, 1); renderReview(); }
+
+        function generateFinalPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            batchPages.forEach((img, i) => {
+                if(i > 0) pdf.addPage();
+                pdf.addImage(img, 'PNG', 0, 0, 210, 297);
+            });
+            pdf.save("Batch_Scan.pdf");
+            batchPages = []; goHome();
+        }
+
+        function goHome() { 
+            const s = document.getElementById('v-feed').srcObject;
+            if(s) s.getTracks().forEach(t => t.stop());
+            switchScreen('screen-home'); 
         }
     </script>
 </body>
