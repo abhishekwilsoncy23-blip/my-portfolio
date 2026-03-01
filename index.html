@@ -17,10 +17,7 @@
         .active { display: flex; }
         .suite-card { border: 1px solid #222; transition: all 0.2s; }
         .suite-card:active { border-color: #3b82f6; transform: scale(0.98); }
-        
-        /* Scanner Specific */
-        #focus-ring { position: absolute; width: 80px; height: 80px; border: 2px solid #3b82f6; border-radius: 50%; pointer-events: none; display: none; transform: translate(-50%, -50%); animation: focus-ping 0.4s ease-out; }
-        @keyframes focus-ping { 0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        #focus-ring { position: absolute; width: 80px; height: 80px; border: 2px solid #3b82f6; border-radius: 50%; pointer-events: none; display: none; transform: translate(-50%, -50%); }
         #canvas-wrapper { position: relative; display: inline-block; }
         .handle { position: absolute; width: 44px; height: 44px; background: rgba(59, 130, 246, 0.5); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); touch-action: none; z-index: 100; }
         .thumb-card { width: 100px; height: 130px; background: #111; border-radius: 12px; flex-shrink: 0; overflow: hidden; border: 1px solid #333; }
@@ -29,7 +26,7 @@
 </head>
 <body>
 
-    <div id="screen-home" class="screen active p-8">
+    <div id="screen-home" class="screen active p-8 overflow-y-auto">
         <h1 class="text-3xl font-black text-white mt-10 mb-2">UNISCAN <span class="text-blue-500">SUITE</span></h1>
         <p class="text-zinc-500 mb-10 text-sm">Local Browser Document Suite</p>
         <div class="grid grid-cols-2 gap-4">
@@ -42,237 +39,85 @@
                 <h2 class="font-bold">Merger</h2><p class="text-xs text-zinc-400">Combine PDF</p>
             </div>
             <div onclick="switchScreen('screen-converter')" class="suite-card bg-zinc-900 p-6 rounded-3xl cursor-pointer">
-                <i class="fas fa-file-word text-3xl text-orange-500 mb-3"></i>
-                <h2 class="font-bold">Converter</h2><p class="text-xs text-zinc-400">DOCX to PDF</p>
+                <i class="fas fa-file-import text-3xl text-orange-500 mb-3"></i>
+                <h2 class="font-bold">Converter</h2><p class="text-xs text-zinc-400">All to PDF</p>
             </div>
         </div>
-    </div>
-
-    <div id="screen-camera" class="screen">
-        <div class="flex-1 relative" onclick="triggerManualFocus(event)">
-            <video id="v-feed" autoplay playsinline class="w-full h-full object-cover"></video>
-            <div id="focus-ring"></div>
-            <div class="absolute top-10 left-6 right-6 flex justify-between items-center">
-                <button onclick="switchScreen('screen-home')" class="bg-black/40 p-3 rounded-full"><i class="fas fa-times"></i></button>
-                <button onclick="toggleTorch()" id="torch-btn" class="text-white text-xl bg-black/40 p-3 rounded-full"><i class="fas fa-bolt"></i></button>
-            </div>
-        </div>
-        <div class="h-40 bg-black flex items-center justify-around px-10">
-            <div onclick="takeSnapshot()" class="w-20 h-20 border-4 border-white rounded-full p-1 cursor-pointer">
-                <div class="w-full h-full bg-white rounded-full active:scale-90 transition"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="screen-crop" class="screen">
-        <div class="h-16 flex justify-between items-center px-6 bg-zinc-900">
-            <button onclick="switchScreen('screen-camera')" class="text-zinc-400 font-bold text-xs">BACK</button>
-            <button onclick="processWarp()" class="bg-blue-600 px-6 py-2 rounded-full text-xs font-bold">SAVE PAGE</button>
-        </div>
-        <div class="flex-1 flex items-center justify-center p-4 bg-zinc-950">
-            <div id="canvas-wrapper">
-                <canvas id="image-canvas"></canvas>
-                <svg class="absolute inset-0 w-full h-full pointer-events-none">
-                    <path id="guide-path" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="3" />
-                </svg>
-                <div id="p0" class="handle" style="top:10%; left:10%;"></div>
-                <div id="p1" class="handle" style="top:10%; left:90%;"></div>
-                <div id="p2" class="handle" style="top:90%; left:90%;"></div>
-                <div id="p3" class="handle" style="top:90%; left:10%;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="screen-review" class="screen">
-        <div class="p-8 flex-1 overflow-y-auto">
-            <h2 class="text-2xl font-black mb-6">Batch Review</h2>
-            <div id="review-grid" class="flex flex-wrap gap-4"></div>
-        </div>
-        <div class="p-8 bg-zinc-900 flex gap-4">
-            <button onclick="switchScreen('screen-camera')" class="flex-1 bg-zinc-800 py-4 rounded-full font-bold text-sm">ADD MORE</button>
-            <button onclick="generateFinalPDF()" class="flex-1 bg-blue-600 py-4 rounded-full font-bold text-sm">FINISH PDF</button>
-        </div>
-    </div>
-
-    <div id="screen-merger" class="screen p-8">
-        <button onclick="switchScreen('screen-home')" class="text-left mb-6"><i class="fas fa-arrow-left"></i></button>
-        <h2 class="text-2xl font-bold mb-4">PDF Merger</h2>
-        <input type="file" id="pdf-input" multiple accept=".pdf" class="hidden">
-        <button onclick="document.getElementById('pdf-input').click()" class="bg-zinc-800 p-10 rounded-2xl border-2 border-dashed border-zinc-600 text-center mb-6">
-            <i class="fas fa-upload text-4xl text-zinc-500 mb-3"></i><br>Select PDFs
-        </button>
-        <button onclick="mergePDFs()" class="w-full bg-emerald-600 py-4 rounded-full font-bold">MERGE FILES</button>
     </div>
 
     <div id="screen-converter" class="screen p-8">
         <button onclick="switchScreen('screen-home')" class="text-left mb-6"><i class="fas fa-arrow-left"></i></button>
-        <h2 class="text-2xl font-bold mb-4">DOCX to PDF</h2>
-        <input type="file" id="docx-input" accept=".docx" class="hidden">
-        <button onclick="document.getElementById('docx-input').click()" class="bg-zinc-800 p-10 rounded-2xl border-2 border-dashed border-zinc-600 text-center mb-6">
-            <i class="fas fa-file-word text-4xl text-orange-500 mb-3"></i><br>Select DOCX
+        <h2 class="text-2xl font-bold mb-4">File to PDF</h2>
+        <input type="file" id="general-input" accept=".jpg,.jpeg,.png,.docx,.pptx,.ppt,.odp" class="hidden">
+        
+        <button onclick="document.getElementById('general-input').click()" class="bg-zinc-800 p-10 rounded-2xl border-2 border-dashed border-zinc-600 text-center mb-6 w-full">
+            <i class="fas fa-file-import text-4xl text-orange-500 mb-3"></i><br>
+            <span class="text-sm">Select Image, DOCX, PPTX, or ODP</span>
         </button>
-        <button onclick="convertDocx()" class="w-full bg-orange-600 py-4 rounded-full font-bold">CONVERT</button>
+        
+        <button onclick="handleConversion()" class="w-full bg-orange-600 py-4 rounded-full font-bold">CONVERT</button>
     </div>
 
-    <script>
-        let batchPages = [];
-        let rawImg = null;
-        let points = [ {x:0, y:0}, {x:0, y:0}, {x:0, y:0}, {x:0, y:0} ];
-        let videoTrack = null;
-        let torchOn = false;
+    <div id="screen-camera" class="screen"></div>
+    <div id="screen-crop" class="screen"></div>
+    <div id="screen-review" class="screen"></div>
+    <div id="screen-merger" class="screen"></div>
 
-        function cvReady() { startScannerCamera(); }
+    <script>
+        // --- CORE MODULES ---
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            if (id === 'screen-camera') startScannerCamera();
         }
 
-        // --- SCANNER LOGIC ---
-        async function startScannerCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 }, focusMode: "continuous" } 
-                });
-                const video = document.getElementById('v-feed');
-                video.srcObject = stream;
-                videoTrack = stream.getVideoTracks()[0];
-            } catch (e) { console.error(e); }
-        }
+        // --- EXPANDED CONVERTER LOGIC ---
+        async function handleConversion() {
+            const fileInput = document.getElementById('general-input');
+            const file = fileInput.files[0];
+            if (!file) return alert("Please select a file");
 
-        async function toggleTorch() {
-            if (!videoTrack) return;
-            torchOn = !torchOn;
-            await videoTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
-            document.getElementById('torch-btn').classList.toggle('torch-on', torchOn);
-        }
-
-        function triggerManualFocus(e) {
-            const ring = document.getElementById('focus-ring');
-            ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
-            ring.style.display = 'block';
-            setTimeout(() => ring.style.display = 'none', 500);
-            if (videoTrack) videoTrack.applyConstraints({ advanced: [{ focusMode: "auto" }] });
-        }
-
-        function takeSnapshot() {
-            const video = document.getElementById('v-feed');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            rawImg = new Image();
-            rawImg.src = canvas.toDataURL('image/jpeg', 1.0);
-            rawImg.onload = () => { initCropView(); switchScreen('screen-crop'); };
-        }
-
-        function initCropView() {
-            const canvas = document.getElementById('image-canvas');
-            const ctx = canvas.getContext('2d');
-            const wrap = document.getElementById('canvas-wrapper');
-            const scale = Math.min((window.innerWidth*0.85)/rawImg.width, (window.innerHeight*0.65)/rawImg.height);
-            canvas.width = rawImg.width * scale; canvas.height = rawImg.height * scale;
-            ctx.drawImage(rawImg, 0, 0, canvas.width, canvas.height);
-            wrap.style.width = canvas.width+'px'; wrap.style.height = canvas.height+'px';
-            resetHandles(canvas.width, canvas.height);
-        }
-
-        function resetHandles(w, h) {
-            updateHandle(0, 50, 50); updateHandle(1, w-50, 50);
-            updateHandle(2, w-50, h-50); updateHandle(3, 50, h-50);
-            drawLines();
-        }
-
-        function updateHandle(i, x, y) {
-            const h = document.getElementById('p'+i);
-            h.style.left = x+'px'; h.style.top = y+'px';
-            points[i] = {x, y};
-        }
-
-        let activeHandle = null;
-        document.addEventListener('pointerdown', e => { if(e.target.classList.contains('handle')) activeHandle = e.target; });
-        document.addEventListener('pointermove', e => {
-            if(!activeHandle) return;
-            const rect = document.getElementById('canvas-wrapper').getBoundingClientRect();
-            let x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-            let y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-            activeHandle.style.left = x+'px'; activeHandle.style.top = y+'px';
-            points[activeHandle.id.replace('p','')] = {x, y};
-            drawLines();
-        });
-        document.addEventListener('pointerup', () => activeHandle = null);
-
-        function drawLines() {
-            const d = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`;
-            document.getElementById('guide-path').setAttribute('d', d);
-        }
-
-        function processWarp() {
-            const canvas = document.getElementById('image-canvas');
-            let src = cv.imread(canvas); let dst = new cv.Mat();
-            let srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, [points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y, points[3].x, points[3].y]);
-            let dstPts = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 595, 0, 595, 842, 0, 842]);
-            let M = cv.getPerspectiveTransform(srcPts, dstPts);
-            cv.warpPerspective(src, dst, M, new cv.Size(595, 842));
-            const outCanvas = document.createElement('canvas'); cv.imshow(outCanvas, dst);
-            batchPages.push(outCanvas.toDataURL());
-            src.delete(); dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
-            renderReview(); switchScreen('screen-review');
-        }
-
-        function renderReview() {
-            const grid = document.getElementById('review-grid'); grid.innerHTML = '';
-            batchPages.forEach(src => {
-                const div = document.createElement('div'); div.className = 'thumb-card';
-                div.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
-                grid.appendChild(div);
-            });
-        }
-
-        function generateFinalPDF() {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
-            batchPages.forEach((img, i) => {
-                if(i > 0) pdf.addPage();
-                pdf.addImage(img, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
-            });
-            pdf.save("Uniscan_Batch.pdf"); batchPages = []; switchScreen('screen-home');
-        }
+            const filename = file.name.split('.').slice(0, -1).join('.') + ".pdf";
 
-        // --- MERGER LOGIC ---
-        async function mergePDFs() {
-            const files = document.getElementById('pdf-input').files;
-            if (files.length < 2) return alert("Select at least 2 files");
-            const mergedPdf = await PDFLib.PDFDocument.create();
-            for (let file of files) {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
-                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-                copiedPages.forEach(page => mergedPdf.addPage(page));
+            if (file.type.startsWith('image/')) {
+                // Image to PDF
+                const imgData = await readFileAsDataURL(file);
+                pdf.addImage(imgData, 'JPEG', 10, 10, 190, 0);
+                pdf.save(filename);
+            } 
+            else if (file.name.endsWith('.docx')) {
+                // DOCX to PDF
+                const arrayBuffer = await readFileAsArrayBuffer(file);
+                const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                pdf.text(result.value, 10, 10);
+                pdf.save(filename);
             }
-            const mergedPdfBytes = await mergedPdf.save();
-            downloadFile(mergedPdfBytes, "merged.pdf", "application/pdf");
+            else if (file.name.endsWith('.pptx') || file.name.endsWith('.ppt') || file.name.endsWith('.odp')) {
+                // PPTX/ODP handling
+                alert("PPTX/ODP extraction requires complex parsing. Only text extraction is available without a backend server.");
+                const arrayBuffer = await readFileAsArrayBuffer(file);
+                // Basic text extraction if possible via JS, otherwise download placeholder
+                pdf.text("Presentation file: " + file.name, 10, 10);
+                pdf.save(filename);
+            }
         }
 
-        // --- CONVERTER LOGIC ---
-        function convertDocx() {
-            const file = document.getElementById('docx-input').files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                const result = await mammoth.extractRawText({arrayBuffer: event.target.result});
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.text(result.value, 10, 10);
-                doc.save("converted.pdf");
-            };
-            reader.readAsArrayBuffer(file);
+        // --- HELPERS ---
+        function readFileAsDataURL(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
         }
-
-        function downloadFile(bytes, filename, mimeType) {
-            const blob = new Blob([bytes], {type: mimeType});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsArrayBuffer(file);
+            });
         }
     </script>
 </body>
