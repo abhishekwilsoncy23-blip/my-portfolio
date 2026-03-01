@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Free Private PDF Merger & Converter | No Uploads</title>
-    <meta name="description" content="Merge and convert PDFs, Images, and DOCX files securely in your browser. 100% private. Files are never stored or uploaded to any server.">
-    <meta name="keywords" content="PDF merger, PDF converter, secure PDF, private PDF tool, image to PDF, DOCX to PDF, merge PDF free">
+    <title>Free Private PDF Merger, Converter & Encryptor</title>
+    <meta name="description" content="Merge, convert, and password-protect PDFs securely in your browser. 100% private. Files are never stored or uploaded.">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -24,16 +24,10 @@
             background: #1a1a20; border: 1px solid #333; border-radius: 12px; 
             padding: 12px 16px; margin-bottom: 10px; 
             display: flex; justify-content: space-between; align-items: center; gap: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .sortable-ghost { opacity: 0.4; border: 2px dashed #3b82f6; background: #111; }
-        .sortable-drag { cursor: grabbing !important; }
-        
         .drag-handle { cursor: grab; padding: 10px; border-radius: 8px; transition: background 0.2s; }
         .drag-handle:active { cursor: grabbing; background: #333; }
-        .drag-handle i { color: #555; }
-        .drag-handle:hover i { color: #fff; }
-
         .file-info { flex: 1; min-width: 0; }
         .btn-icon { 
             width: 36px; height: 36px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); 
@@ -41,39 +35,46 @@
             cursor: pointer; transition: background 0.2s;
         }
         .btn-icon:hover { background: rgba(239, 68, 68, 0.2); }
-        .btn-icon:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <div id="screen-home" class="screen active p-6 md:p-10 max-w-3xl mx-auto w-full">
-        <h1 class="text-4xl font-black text-white mt-10 mb-2 tracking-tight">PDF <span class="text-blue-500">TOOLS</span></h1>
+    <div id="screen-home" class="screen active p-6 md:p-10 max-w-4xl mx-auto w-full">
+        <h1 class="text-4xl font-black text-white mt-10 mb-2 tracking-tight">PDF <span class="text-blue-500">SECURE</span></h1>
         
         <div class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-10 flex items-center gap-4">
             <div class="bg-blue-500/20 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-shield-alt text-blue-400"></i>
             </div>
             <div>
-                <h3 class="font-bold text-sm text-blue-100">100% Private & Secure</h3>
+                <h3 class="font-bold text-sm text-blue-100">100% Private & Offline</h3>
                 <p class="text-xs text-blue-300">Files are processed entirely on your device. We never store or upload your data.</p>
             </div>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div onclick="switchScreen('screen-merger')" class="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-emerald-500/50">
-                <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6">
-                    <i class="fas fa-layer-group text-2xl text-emerald-500"></i>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div onclick="switchScreen('screen-merger')" class="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-emerald-500/50">
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4">
+                    <i class="fas fa-layer-group text-xl text-emerald-500"></i>
                 </div>
-                <h2 class="font-bold text-xl mb-1">Merge PDFs</h2>
-                <p class="text-sm text-zinc-400">Combine multiple PDFs securely.</p>
+                <h2 class="font-bold text-lg mb-1">Merge PDFs</h2>
+                <p class="text-xs text-zinc-400">Combine & order securely.</p>
             </div>
             
-            <div onclick="switchScreen('screen-converter')" class="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-orange-500/50">
-                <div class="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6">
-                    <i class="fas fa-file-export text-2xl text-orange-500"></i>
+            <div onclick="switchScreen('screen-converter')" class="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-orange-500/50">
+                <div class="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-4">
+                    <i class="fas fa-file-export text-xl text-orange-500"></i>
                 </div>
-                <h2 class="font-bold text-xl mb-1">Convert to PDF</h2>
-                <p class="text-sm text-zinc-400">Change Images & DOCX to PDF.</p>
+                <h2 class="font-bold text-lg mb-1">Convert to PDF</h2>
+                <p class="text-xs text-zinc-400">Images & DOCX to PDF.</p>
+            </div>
+
+            <div onclick="switchScreen('screen-encrypt')" class="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-purple-500/50">
+                <div class="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4">
+                    <i class="fas fa-lock text-xl text-purple-500"></i>
+                </div>
+                <h2 class="font-bold text-lg mb-1">Protect PDF</h2>
+                <p class="text-xs text-zinc-400">Add a password securely.</p>
             </div>
         </div>
     </div>
@@ -88,13 +89,12 @@
         <button onclick="document.getElementById('merge-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-10 rounded-3xl text-center mb-4 w-full active:bg-zinc-800 transition">
             <i class="fas fa-plus text-3xl text-emerald-500 mb-3"></i><br><span class="text-zinc-300 font-bold">Add PDF Files</span>
         </button>
-        <p class="text-xs text-zinc-500 text-center mb-6"><i class="fas fa-hand-pointer mr-1"></i> Drag items to reorder them</p>
 
         <div id="merge-list" class="flex-1 overflow-y-auto mb-6 pb-20"></div>
 
         <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black to-transparent pointer-events-none md:static md:bg-none md:p-0">
             <div class="max-w-3xl mx-auto pointer-events-auto">
-                <button onclick="executeMerge()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-5 rounded-2xl font-bold text-white tracking-widest transition shadow-lg shadow-emerald-900/20">MERGE FILES SECURELY</button>
+                <button onclick="executeMerge()" id="btn-merge" class="w-full bg-emerald-600 hover:bg-emerald-500 py-5 rounded-2xl font-bold text-white tracking-widest transition shadow-lg shadow-emerald-900/20">MERGE FILES SECURELY</button>
             </div>
         </div>
     </div>
@@ -109,20 +109,52 @@
         <button onclick="document.getElementById('convert-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-10 rounded-3xl text-center mb-4 w-full active:bg-zinc-800 transition">
             <i class="fas fa-images text-3xl text-orange-500 mb-3"></i><br><span class="text-zinc-300 font-bold">Add Images or DOCX</span>
         </button>
-        <p class="text-xs text-zinc-500 text-center mb-6"><i class="fas fa-hand-pointer mr-1"></i> Drag items to reorder them</p>
 
         <div id="convert-list" class="flex-1 overflow-y-auto mb-6 pb-20"></div>
 
         <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black to-transparent pointer-events-none md:static md:bg-none md:p-0">
             <div class="max-w-3xl mx-auto pointer-events-auto">
-                <button onclick="executeConvert()" class="w-full bg-orange-600 hover:bg-orange-500 py-5 rounded-2xl font-bold text-white tracking-widest transition shadow-lg shadow-orange-900/20">CONVERT TO PDF</button>
+                <button onclick="executeConvert()" id="btn-convert" class="w-full bg-orange-600 hover:bg-orange-500 py-5 rounded-2xl font-bold text-white tracking-widest transition shadow-lg shadow-orange-900/20">CONVERT TO PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-encrypt" class="screen p-6 md:p-10 max-w-3xl mx-auto w-full flex-1">
+        <div class="flex items-center gap-4 mb-8">
+            <button onclick="switchScreen('screen-home')" class="text-zinc-400 hover:text-white text-xl p-2 -ml-2"><i class="fas fa-arrow-left"></i></button>
+            <h2 class="text-2xl font-bold">Protect PDF</h2>
+        </div>
+
+        <input type="file" id="encrypt-input" accept=".pdf" class="hidden" onchange="handleEncryptFile(event)">
+        <button onclick="document.getElementById('encrypt-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-10 rounded-3xl text-center mb-6 w-full active:bg-zinc-800 transition">
+            <i class="fas fa-file-pdf text-3xl text-purple-500 mb-3"></i><br><span class="text-zinc-300 font-bold" id="encrypt-file-label">Select a PDF File</span>
+        </button>
+
+        <div class="mb-6">
+            <label class="block text-xs text-zinc-400 font-bold mb-2 ml-2 tracking-wider">SET PASSWORD</label>
+            <div class="relative">
+                <i class="fas fa-key absolute left-5 top-1/2 transform -translate-y-1/2 text-zinc-500"></i>
+                <input type="password" id="encrypt-pwd" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl py-4 pl-12 pr-4 text-white focus:border-purple-500 focus:outline-none transition" placeholder="Enter secure password...">
+            </div>
+        </div>
+
+        <div class="bg-purple-900/10 border border-purple-500/20 rounded-xl p-4 mb-6">
+            <p class="text-xs text-purple-300 leading-relaxed"><i class="fas fa-info-circle mr-1"></i> <strong>Secure Flattening:</strong> To encrypt entirely in your browser without servers, this tool flattens the PDF into high-res images before locking it. Text will not be highlightable, which prevents unauthorized copy-pasting.</p>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black to-transparent pointer-events-none md:static md:bg-none md:p-0 mt-auto">
+            <div class="max-w-3xl mx-auto pointer-events-auto">
+                <button onclick="executeEncrypt()" id="btn-encrypt" class="w-full bg-purple-600 hover:bg-purple-500 py-5 rounded-2xl font-bold text-white tracking-widest transition shadow-lg shadow-purple-900/20">LOCK & DOWNLOAD PDF</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Setup PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
         // --- STATE & NAVIGATION ---
-        let state = { merge: [], convert: [] };
+        let state = { merge: [], convert: [], encryptFile: null };
         let sortables = { merge: null, convert: null };
 
         function switchScreen(id) {
@@ -138,7 +170,7 @@
             link.click();
         }
 
-        // --- UNIFIED LIST LOGIC ---
+        // --- MERGE & CONVERT LIST LOGIC ---
         function addFiles(event, type) {
             const files = Array.from(event.target.files);
             state[type] = state[type].concat(files);
@@ -164,16 +196,14 @@
             state[type].forEach((file, index) => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
-                item.dataset.index = index; // Store original index for SortableJS
                 
-                let icon = 'fa-file';
-                let color = 'text-zinc-400';
+                let icon = 'fa-file'; let color = 'text-zinc-400';
                 if(file.name.toLowerCase().endsWith('.pdf')) { icon = 'fa-file-pdf'; color = 'text-emerald-500'; }
                 else if(file.name.toLowerCase().match(/\.(jpg|jpeg|png)$/)) { icon = 'fa-image'; color = 'text-blue-400'; }
                 else if(file.name.toLowerCase().endsWith('.docx')) { icon = 'fa-file-word'; color = 'text-blue-600'; }
 
                 item.innerHTML = `
-                    <div class="drag-handle"><i class="fas fa-grip-lines text-xl"></i></div>
+                    <div class="drag-handle"><i class="fas fa-grip-lines text-xl text-zinc-500 hover:text-white"></i></div>
                     <div class="flex items-center gap-3 flex-1 min-w-0">
                         <i class="fas ${icon} ${color} text-xl w-6 text-center"></i>
                         <div class="file-info">
@@ -186,29 +216,94 @@
                 listEl.appendChild(item);
             });
 
-            // Initialize or Re-initialize SortableJS
             if(sortables[type]) sortables[type].destroy();
             sortables[type] = new Sortable(listEl, {
-                animation: 150,
-                handle: '.drag-handle', // Only drag when clicking the grip icon
-                ghostClass: 'sortable-ghost',
+                animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost',
                 onEnd: function (evt) {
-                    // Reorder the underlying array to match the new UI order
                     const item = state[type].splice(evt.oldIndex, 1)[0];
                     state[type].splice(evt.newIndex, 0, item);
-                    // Re-render to update the trash button indices
                     renderList(type);
                 }
             });
         }
 
-        // --- EXECUTION: MERGE ---
-        async function executeMerge() {
-            if (state.merge.length < 2) return alert("Please add at least 2 PDFs to merge.");
+        // --- ENCRYPT LOGIC ---
+        function handleEncryptFile(event) {
+            const file = event.target.files[0];
+            if(file) {
+                state.encryptFile = file;
+                document.getElementById('encrypt-file-label').innerHTML = `<span class="text-white">${file.name}</span><br><span class="text-xs text-zinc-500 font-normal">${(file.size/1024/1024).toFixed(2)} MB</span>`;
+            }
+        }
+
+        async function executeEncrypt() {
+            const file = state.encryptFile;
+            const pwd = document.getElementById('encrypt-pwd').value;
             
-            const btn = document.querySelector('#screen-merger button:last-child');
-            const originalText = btn.innerText;
-            btn.innerText = "PROCESSING..."; btn.style.opacity = 0.7;
+            if (!file) return alert("Please select a PDF file first.");
+            if (!pwd) return alert("Please enter a password.");
+
+            const btn = document.getElementById('btn-encrypt');
+            const ogText = btn.innerText;
+            btn.innerText = "ENCRYPTING (This may take a moment)..."; btn.style.opacity = 0.7;
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const typedarray = new Uint8Array(arrayBuffer);
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                
+                const { jsPDF } = window.jspdf;
+                // Initialize jsPDF with encryption settings
+                const doc = new jsPDF({
+                    encryption: {
+                        userPermissions: ["print"],
+                        userPassword: pwd,
+                        ownerPassword: pwd + "_owner" // Creates an owner hash so the file is locked securely
+                    }
+                });
+
+                // Flatten and render each page
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 2.0 }); // High-res scale for crisp text
+                    
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                    
+                    if (i > 1) doc.addPage();
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.85); // Compress slightly to manage size
+                    const pdfWidth = doc.internal.pageSize.getWidth();
+                    const pdfHeight = (viewport.height * pdfWidth) / viewport.width;
+                    
+                    doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                }
+                
+                doc.save("Secure_" + file.name);
+                
+                // Reset
+                state.encryptFile = null;
+                document.getElementById('encrypt-pwd').value = '';
+                document.getElementById('encrypt-file-label').innerText = "Select a PDF File";
+                switchScreen('screen-home');
+                
+            } catch (err) {
+                alert("Error encrypting document. Ensure it isn't already encrypted.");
+                console.error(err);
+            } finally {
+                btn.innerText = ogText; btn.style.opacity = 1;
+            }
+        }
+
+        // --- MERGE EXECUTION ---
+        async function executeMerge() {
+            if (state.merge.length < 2) return alert("Add at least 2 PDFs.");
+            const btn = document.getElementById('btn-merge');
+            const ogText = btn.innerText; btn.innerText = "MERGING..."; btn.style.opacity = 0.7;
 
             try {
                 const mergedPdf = await PDFLib.PDFDocument.create();
@@ -224,18 +319,14 @@
                 state.merge = []; renderList('merge'); switchScreen('screen-home');
             } catch (error) {
                 alert("Error merging files. Ensure they are valid PDFs.");
-            } finally {
-                btn.innerText = originalText; btn.style.opacity = 1;
-            }
+            } finally { btn.innerText = ogText; btn.style.opacity = 1; }
         }
 
-        // --- EXECUTION: CONVERT (MULTI-FILE) ---
+        // --- CONVERT EXECUTION ---
         async function executeConvert() {
-            if (state.convert.length === 0) return alert("Please add files to convert.");
-
-            const btn = document.querySelector('#screen-converter button:last-child');
-            const originalText = btn.innerText;
-            btn.innerText = "PROCESSING..."; btn.style.opacity = 0.7;
+            if (state.convert.length === 0) return alert("Add files to convert.");
+            const btn = document.getElementById('btn-convert');
+            const ogText = btn.innerText; btn.innerText = "CONVERTING..."; btn.style.opacity = 0.7;
 
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({ format: 'a4', unit: 'mm' });
@@ -245,66 +336,39 @@
                 for (let file of state.convert) {
                     if (file.type.startsWith('image/')) {
                         if (!isFirstPage) pdf.addPage();
-                        
-                        const imgData = await new Promise((resolve) => {
-                            const reader = new FileReader();
-                            reader.onload = e => resolve(e.target.result);
-                            reader.readAsDataURL(file);
+                        const imgData = await new Promise((res) => {
+                            const reader = new FileReader(); reader.onload = e => res(e.target.result); reader.readAsDataURL(file);
                         });
-
                         const imgProps = pdf.getImageProperties(imgData);
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = pdf.internal.pageSize.getHeight();
-                        
-                        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
-                        const width = imgProps.width * ratio;
-                        const height = imgProps.height * ratio;
-                        
-                        const x = (pdfWidth - width) / 2;
-                        const y = (pdfHeight - height) / 2;
-
-                        pdf.addImage(imgData, 'JPEG', x, y, width, height, undefined, 'FAST');
+                        const pdfW = pdf.internal.pageSize.getWidth(); const pdfH = pdf.internal.pageSize.getHeight();
+                        const ratio = Math.min(pdfW / imgProps.width, pdfH / imgProps.height);
+                        const w = imgProps.width * ratio; const h = imgProps.height * ratio;
+                        pdf.addImage(imgData, 'JPEG', (pdfW - w)/2, (pdfH - h)/2, w, h, undefined, 'FAST');
                         isFirstPage = false;
                     } 
                     else if (file.name.toLowerCase().endsWith('.docx')) {
                         if (!isFirstPage) pdf.addPage();
-
                         const arrayBuffer = await file.arrayBuffer();
                         const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-                        
                         const splitText = pdf.splitTextToSize(result.value, 190);
                         let yPos = 15;
-                        
                         for (let i = 0; i < splitText.length; i++) {
-                            if (yPos > 280) {
-                                pdf.addPage();
-                                yPos = 15;
-                            }
+                            if (yPos > 280) { pdf.addPage(); yPos = 15; }
                             pdf.text(splitText[i], 10, yPos);
                             yPos += 7;
                         }
                         isFirstPage = false;
                     }
                 }
-                
-                let outName = state.convert.length === 1 
-                    ? state.convert[0].name.split('.')[0] + ".pdf" 
-                    : "Converted_Secure_Document.pdf";
-                
+                let outName = state.convert.length === 1 ? state.convert[0].name.split('.')[0] + ".pdf" : "Converted_Document.pdf";
                 pdf.save(outName);
                 state.convert = []; renderList('convert'); switchScreen('screen-home');
-
             } catch (err) {
                 alert("Error during conversion.");
-                console.error(err);
-            } finally {
-                btn.innerText = originalText; btn.style.opacity = 1;
-            }
+            } finally { btn.innerText = ogText; btn.style.opacity = 1; }
         }
 
-        // Initialize empty lists
-        renderList('merge');
-        renderList('convert');
+        renderList('merge'); renderList('convert');
     </script>
 </body>
 </html>
