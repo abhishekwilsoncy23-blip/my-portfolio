@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UNISCAN SUITE | File Ops</title>
+    <title>DOC SUITE | Pro Offline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -11,88 +11,90 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        body { background: #0a0a0c; color: white; overflow-x: hidden; font-family: sans-serif; }
+        body { background: #0a0a0c; color: white; overflow-x: hidden; font-family: sans-serif; touch-action: manipulation; }
         .screen { display: none; flex-direction: column; min-height: 100vh; }
         .active { display: flex; }
-        .list-item { background: #1a1a20; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-icon { width: 32px; height: 32px; border-radius: 6px; background: #333; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .btn-icon:active { background: #555; }
+        
+        /* Responsive List Item */
+        .list-item { 
+            background: #1a1a20; border: 1px solid #333; border-radius: 12px; 
+            padding: 12px 16px; margin-bottom: 10px; 
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            transition: transform 0.1s;
+        }
+        .file-info { flex: 1; min-width: 0; /* allows text truncation */ }
+        .controls { display: flex; gap: 6px; flex-shrink: 0; }
+        
+        .btn-icon { 
+            width: 36px; height: 36px; border-radius: 8px; background: #2a2a32; 
+            display: flex; justify-content: center; align-items: center; 
+            cursor: pointer; transition: background 0.2s;
+        }
+        .btn-icon:active { background: #444; transform: scale(0.95); }
+        .btn-icon:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div id="screen-home" class="screen active p-8">
-        <h1 class="text-3xl font-black text-white mt-10 mb-2">DOC <span class="text-blue-500">SUITE</span></h1>
-        <p class="text-zinc-500 text-sm mb-10">Offline Browser Utilities</p>
+    <div id="screen-home" class="screen active p-6 md:p-10 max-w-3xl mx-auto w-full">
+        <h1 class="text-4xl font-black text-white mt-10 mb-2 tracking-tight">DOC <span class="text-blue-500">SUITE</span></h1>
+        <p class="text-zinc-500 text-sm mb-12">100% Offline Browser Utilities</p>
         
-        <div class="grid grid-cols-1 gap-4">
-            <div onclick="switchScreen('screen-merger')" class="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl cursor-pointer active:bg-zinc-800 flex items-center gap-4">
-                <i class="fas fa-layer-group text-3xl text-emerald-500 w-10"></i>
-                <div><h2 class="font-bold text-lg">PDF Merger</h2><p class="text-xs text-zinc-400">Order & Combine PDFs</p></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div onclick="switchScreen('screen-merger')" class="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-emerald-500/50">
+                <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-layer-group text-2xl text-emerald-500"></i>
+                </div>
+                <h2 class="font-bold text-xl mb-1">PDF Merger</h2>
+                <p class="text-sm text-zinc-400">Order & Combine PDFs</p>
             </div>
-            <div onclick="switchScreen('screen-converter')" class="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl cursor-pointer active:bg-zinc-800 flex items-center gap-4">
-                <i class="fas fa-file-export text-3xl text-orange-500 w-10"></i>
-                <div><h2 class="font-bold text-lg">File Converter</h2><p class="text-xs text-zinc-400">Images/DOCX to PDF</p></div>
-            </div>
-            <div onclick="switchScreen('screen-reducer')" class="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl cursor-pointer active:bg-zinc-800 flex items-center gap-4">
-                <i class="fas fa-compress-arrows-alt text-3xl text-purple-500 w-10"></i>
-                <div><h2 class="font-bold text-lg">PDF Reducer</h2><p class="text-xs text-zinc-400">Basic File Compression</p></div>
+            
+            <div onclick="switchScreen('screen-converter')" class="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl cursor-pointer active:bg-zinc-800 transition hover:border-orange-500/50">
+                <div class="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-file-export text-2xl text-orange-500"></i>
+                </div>
+                <h2 class="font-bold text-xl mb-1">File Converter</h2>
+                <p class="text-sm text-zinc-400">Images & DOCX to PDF</p>
             </div>
         </div>
     </div>
 
-    <div id="screen-merger" class="screen p-8">
+    <div id="screen-merger" class="screen p-6 md:p-10 max-w-3xl mx-auto w-full flex-1">
         <div class="flex items-center gap-4 mb-8">
-            <button onclick="switchScreen('screen-home')" class="text-white text-xl"><i class="fas fa-arrow-left"></i></button>
+            <button onclick="switchScreen('screen-home')" class="text-zinc-400 hover:text-white text-xl p-2 -ml-2"><i class="fas fa-arrow-left"></i></button>
             <h2 class="text-2xl font-bold">PDF Merger</h2>
         </div>
         
-        <input type="file" id="merge-input" multiple accept=".pdf" class="hidden" onchange="addMergeFiles(event)">
-        <button onclick="document.getElementById('merge-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-8 rounded-2xl text-center mb-6 w-full active:bg-zinc-800">
-            <i class="fas fa-plus-circle text-3xl text-emerald-500 mb-2"></i><br><span class="text-zinc-300 font-bold text-sm">Add PDFs</span>
+        <input type="file" id="merge-input" multiple accept=".pdf" class="hidden" onchange="addFiles(event, 'merge')">
+        <button onclick="document.getElementById('merge-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-10 rounded-3xl text-center mb-6 w-full active:bg-zinc-800 transition">
+            <i class="fas fa-plus text-3xl text-emerald-500 mb-3"></i><br><span class="text-zinc-300 font-bold">Add PDF Files</span>
         </button>
 
-        <div id="merge-list" class="flex-1 overflow-y-auto mb-6">
-            </div>
+        <div id="merge-list" class="flex-1 overflow-y-auto mb-6"></div>
 
-        <button onclick="executeMerge()" class="w-full bg-emerald-600 py-4 rounded-xl font-bold text-white tracking-wider active:bg-emerald-700">MERGE TO PDF</button>
+        <button onclick="executeMerge()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-5 rounded-2xl font-bold text-white tracking-widest transition mt-auto shadow-lg shadow-emerald-900/20">MERGE DOCUMENT</button>
     </div>
 
-    <div id="screen-converter" class="screen p-8">
+    <div id="screen-converter" class="screen p-6 md:p-10 max-w-3xl mx-auto w-full flex-1">
         <div class="flex items-center gap-4 mb-8">
-            <button onclick="switchScreen('screen-home')" class="text-white text-xl"><i class="fas fa-arrow-left"></i></button>
+            <button onclick="switchScreen('screen-home')" class="text-zinc-400 hover:text-white text-xl p-2 -ml-2"><i class="fas fa-arrow-left"></i></button>
             <h2 class="text-2xl font-bold">File Converter</h2>
         </div>
 
-        <input type="file" id="convert-input" accept=".jpg,.jpeg,.png,.docx" class="hidden" onchange="handleConvertFileSelect(event)">
-        <button onclick="document.getElementById('convert-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-8 rounded-2xl text-center mb-6 w-full active:bg-zinc-800">
-            <i class="fas fa-file-upload text-3xl text-orange-500 mb-2"></i><br><span class="text-zinc-300 font-bold text-sm">Select Image or DOCX</span>
+        <input type="file" id="convert-input" multiple accept=".jpg,.jpeg,.png,.docx" class="hidden" onchange="addFiles(event, 'convert')">
+        <button onclick="document.getElementById('convert-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-10 rounded-3xl text-center mb-6 w-full active:bg-zinc-800 transition">
+            <i class="fas fa-images text-3xl text-orange-500 mb-3"></i><br><span class="text-zinc-300 font-bold">Add Images or DOCX</span>
         </button>
 
-        <div id="convert-info" class="mb-6 text-zinc-400 text-sm text-center">No file selected.</div>
+        <div id="convert-list" class="flex-1 overflow-y-auto mb-6"></div>
 
-        <button onclick="executeConvert()" class="w-full bg-orange-600 py-4 rounded-xl font-bold text-white tracking-wider active:bg-orange-700">CONVERT TO PDF</button>
-    </div>
-
-    <div id="screen-reducer" class="screen p-8">
-        <div class="flex items-center gap-4 mb-8">
-            <button onclick="switchScreen('screen-home')" class="text-white text-xl"><i class="fas fa-arrow-left"></i></button>
-            <h2 class="text-2xl font-bold">PDF Reducer</h2>
-        </div>
-
-        <input type="file" id="reduce-input" accept=".pdf" class="hidden" onchange="handleReduceFileSelect(event)">
-        <button onclick="document.getElementById('reduce-input').click()" class="bg-zinc-900 border-2 border-dashed border-zinc-700 p-8 rounded-2xl text-center mb-6 w-full active:bg-zinc-800">
-            <i class="fas fa-compress text-3xl text-purple-500 mb-2"></i><br><span class="text-zinc-300 font-bold text-sm">Select PDF to Compress</span>
-        </button>
-
-        <div id="reduce-info" class="mb-6 text-zinc-400 text-sm text-center">No file selected.</div>
-
-        <button onclick="executeReduce()" class="w-full bg-purple-600 py-4 rounded-xl font-bold text-white tracking-wider active:bg-purple-700">COMPRESS PDF</button>
-        <p class="text-xs text-zinc-500 mt-4 text-center">Note: Offline reduction optimizes metadata and structure. It cannot drastically compress high-res images inside the PDF.</p>
+        <button onclick="executeConvert()" class="w-full bg-orange-600 hover:bg-orange-500 py-5 rounded-2xl font-bold text-white tracking-widest transition mt-auto shadow-lg shadow-orange-900/20">CONVERT TO PDF</button>
     </div>
 
     <script>
-        // --- NAVIGATION ---
+        // --- STATE & NAVIGATION ---
+        let state = { merge: [], convert: [] };
+
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -106,178 +108,175 @@
             link.click();
         }
 
-        // ==========================================
-        // MERGER LOGIC (With Reordering)
-        // ==========================================
-        let mergeFilesArray = [];
-
-        function addMergeFiles(event) {
+        // --- UNIFIED LIST LOGIC ---
+        function addFiles(event, type) {
             const files = Array.from(event.target.files);
-            mergeFilesArray = mergeFilesArray.concat(files);
-            renderMergeList();
-            event.target.value = ''; // Reset input
+            state[type] = state[type].concat(files);
+            renderList(type);
+            event.target.value = ''; 
         }
 
-        function renderMergeList() {
-            const list = document.getElementById('merge-list');
-            list.innerHTML = '';
+        function moveItem(index, direction, type) {
+            if (index + direction < 0 || index + direction >= state[type].length) return;
+            const temp = state[type][index];
+            state[type][index] = state[type][index + direction];
+            state[type][index + direction] = temp;
+            renderList(type);
+        }
+
+        function removeItem(index, type) {
+            state[type].splice(index, 1);
+            renderList(type);
+        }
+
+        function renderList(type) {
+            const listEl = document.getElementById(`${type}-list`);
+            listEl.innerHTML = '';
             
-            if (mergeFilesArray.length === 0) {
-                list.innerHTML = '<p class="text-zinc-600 text-center text-sm mt-4">No PDFs added yet.</p>';
+            if (state[type].length === 0) {
+                listEl.innerHTML = `<div class="text-zinc-600 text-center py-8 text-sm bg-zinc-900/50 rounded-2xl border border-zinc-800">No files added yet.</div>`;
                 return;
             }
 
-            mergeFilesArray.forEach((file, index) => {
+            state[type].forEach((file, index) => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
+                
+                // Icon based on file type
+                let icon = 'fa-file';
+                let color = 'text-zinc-400';
+                if(file.name.toLowerCase().endsWith('.pdf')) { icon = 'fa-file-pdf'; color = 'text-emerald-500'; }
+                else if(file.name.toLowerCase().match(/\.(jpg|jpeg|png)$/)) { icon = 'fa-image'; color = 'text-blue-400'; }
+                else if(file.name.toLowerCase().endsWith('.docx')) { icon = 'fa-file-word'; color = 'text-blue-600'; }
+
                 item.innerHTML = `
-                    <div class="flex-1 truncate pr-4">
-                        <span class="text-sm font-bold text-white">${index + 1}. ${file.name}</span>
-                        <div class="text-xs text-zinc-500">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <i class="fas ${icon} ${color} text-xl w-6 text-center"></i>
+                        <div class="file-info">
+                            <div class="text-sm font-bold text-white truncate">${file.name}</div>
+                            <div class="text-xs text-zinc-500 mt-0.5">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                        </div>
                     </div>
-                    <div class="flex gap-2">
-                        <button class="btn-icon text-zinc-400" onclick="moveMergeItem(${index}, -1)" ${index === 0 ? 'disabled style="opacity:0.3"' : ''}><i class="fas fa-arrow-up"></i></button>
-                        <button class="btn-icon text-zinc-400" onclick="moveMergeItem(${index}, 1)" ${index === mergeFilesArray.length - 1 ? 'disabled style="opacity:0.3"' : ''}><i class="fas fa-arrow-down"></i></button>
-                        <button class="btn-icon text-red-500" onclick="removeMergeItem(${index})"><i class="fas fa-trash"></i></button>
+                    <div class="controls">
+                        <button class="btn-icon" onclick="moveItem(${index}, -1, '${type}')" ${index === 0 ? 'disabled' : ''}><i class="fas fa-chevron-up text-zinc-400"></i></button>
+                        <button class="btn-icon" onclick="moveItem(${index}, 1, '${type}')" ${index === state[type].length - 1 ? 'disabled' : ''}><i class="fas fa-chevron-down text-zinc-400"></i></button>
+                        <button class="btn-icon !bg-red-500/10 hover:!bg-red-500/20" onclick="removeItem(${index}, '${type}')"><i class="fas fa-times text-red-500"></i></button>
                     </div>
                 `;
-                list.appendChild(item);
+                listEl.appendChild(item);
             });
         }
 
-        function moveMergeItem(index, direction) {
-            if (index + direction < 0 || index + direction >= mergeFilesArray.length) return;
-            const temp = mergeFilesArray[index];
-            mergeFilesArray[index] = mergeFilesArray[index + direction];
-            mergeFilesArray[index + direction] = temp;
-            renderMergeList();
-        }
-
-        function removeMergeItem(index) {
-            mergeFilesArray.splice(index, 1);
-            renderMergeList();
-        }
-
+        // --- EXECUTION: MERGE ---
         async function executeMerge() {
-            if (mergeFilesArray.length < 2) return alert("Please add at least 2 PDFs to merge.");
+            if (state.merge.length < 2) return alert("Please add at least 2 PDFs to merge.");
             
+            // UI Feedback
+            const btn = document.querySelector('#screen-merger button:last-child');
+            const originalText = btn.innerText;
+            btn.innerText = "MERGING..."; btn.style.opacity = 0.7;
+
             try {
                 const mergedPdf = await PDFLib.PDFDocument.create();
-                
-                for (let i = 0; i < mergeFilesArray.length; i++) {
-                    const arrayBuffer = await mergeFilesArray[i].arrayBuffer();
+                for (let file of state.merge) {
+                    const arrayBuffer = await file.arrayBuffer();
                     const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
                     const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
                     copiedPages.forEach(page => mergedPdf.addPage(page));
                 }
-                
                 const mergedPdfBytes = await mergedPdf.save();
                 downloadBlob(mergedPdfBytes, "Merged_Document.pdf");
                 
-                mergeFilesArray = [];
-                renderMergeList();
-                switchScreen('screen-home');
+                state.merge = []; renderList('merge'); switchScreen('screen-home');
             } catch (error) {
                 alert("Error merging files. Ensure they are valid PDFs.");
-                console.error(error);
+            } finally {
+                btn.innerText = originalText; btn.style.opacity = 1;
             }
         }
 
-        // ==========================================
-        // CONVERTER LOGIC
-        // ==========================================
-        let fileToConvert = null;
-
-        function handleConvertFileSelect(event) {
-            fileToConvert = event.target.files[0];
-            if (fileToConvert) {
-                document.getElementById('convert-info').innerHTML = `<span class="text-white font-bold">${fileToConvert.name}</span> selected. Ready to convert.`;
-            }
-        }
-
+        // --- EXECUTION: CONVERT (MULTI-FILE) ---
         async function executeConvert() {
-            if (!fileToConvert) return alert("Please select a file first.");
+            if (state.convert.length === 0) return alert("Please add files to convert.");
+
+            const btn = document.querySelector('#screen-converter button:last-child');
+            const originalText = btn.innerText;
+            btn.innerText = "CONVERTING..."; btn.style.opacity = 0.7;
 
             const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            const filename = fileToConvert.name.split('.').slice(0, -1).join('.') + ".pdf";
+            const pdf = new jsPDF({ format: 'a4', unit: 'mm' });
+            let isFirstPage = true;
 
             try {
-                if (fileToConvert.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const imgProps = pdf.getImageProperties(e.target.result);
+                for (let file of state.convert) {
+                    if (file.type.startsWith('image/')) {
+                        // Image Handling
+                        if (!isFirstPage) pdf.addPage();
+                        
+                        const imgData = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = e => resolve(e.target.result);
+                            reader.readAsDataURL(file);
+                        });
+
+                        const imgProps = pdf.getImageProperties(imgData);
                         const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                        pdf.addImage(e.target.result, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                        pdf.save(filename);
-                    };
-                    reader.readAsDataURL(fileToConvert);
-                } 
-                else if (fileToConvert.name.endsWith('.docx')) {
-                    const arrayBuffer = await fileToConvert.arrayBuffer();
-                    const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-                    
-                    // Simple text wrapping for PDF
-                    const splitText = pdf.splitTextToSize(result.value, 190);
-                    let y = 10;
-                    for (let i = 0; i < splitText.length; i++) {
-                        if (y > 280) { pdf.addPage(); y = 10; }
-                        pdf.text(splitText[i], 10, y);
-                        y += 6;
+                        const pdfHeight = pdf.internal.pageSize.getHeight();
+                        
+                        // Calculate aspect ratio to fit within A4
+                        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
+                        const width = imgProps.width * ratio;
+                        const height = imgProps.height * ratio;
+                        
+                        // Center image on page
+                        const x = (pdfWidth - width) / 2;
+                        const y = (pdfHeight - height) / 2;
+
+                        pdf.addImage(imgData, 'JPEG', x, y, width, height, undefined, 'FAST');
+                        isFirstPage = false;
+                    } 
+                    else if (file.name.toLowerCase().endsWith('.docx')) {
+                        // DOCX Text Extraction Handling
+                        if (!isFirstPage) pdf.addPage();
+
+                        const arrayBuffer = await file.arrayBuffer();
+                        const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                        
+                        // Split text to fit A4 width (approx 190mm usable width)
+                        const splitText = pdf.splitTextToSize(result.value, 190);
+                        let yPos = 15;
+                        
+                        for (let i = 0; i < splitText.length; i++) {
+                            if (yPos > 280) { // A4 height is ~297mm
+                                pdf.addPage();
+                                yPos = 15;
+                            }
+                            pdf.text(splitText[i], 10, yPos);
+                            yPos += 7; // Line spacing
+                        }
+                        isFirstPage = false;
                     }
-                    pdf.save(filename);
-                } else {
-                    alert("Unsupported format. Please select an Image or DOCX.");
-                }
-            } catch (err) {
-                alert("Error converting file.");
-                console.error(err);
-            }
-        }
-
-        // ==========================================
-        // REDUCER LOGIC
-        // ==========================================
-        let fileToReduce = null;
-
-        function handleReduceFileSelect(event) {
-            fileToReduce = event.target.files[0];
-            if (fileToReduce) {
-                const sizeMB = (fileToReduce.size / 1024 / 1024).toFixed(2);
-                document.getElementById('reduce-info').innerHTML = `<span class="text-white font-bold">${fileToReduce.name}</span> (${sizeMB} MB) selected.`;
-            }
-        }
-
-        async function executeReduce() {
-            if (!fileToReduce) return alert("Please select a PDF first.");
-
-            try {
-                const arrayBuffer = await fileToReduce.arrayBuffer();
-                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
-                
-                // Save with useObjectStreams to compress structure and metadata
-                const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
-                
-                const originalSize = fileToReduce.size;
-                const newSize = pdfBytes.byteLength;
-                
-                if (newSize >= originalSize) {
-                    alert("This PDF is already highly optimized. Client-side compression cannot reduce it further.");
-                } else {
-                    downloadBlob(pdfBytes, "Reduced_" + fileToReduce.name);
-                    alert(`Reduced from ${(originalSize/1024/1024).toFixed(2)}MB to ${(newSize/1024/1024).toFixed(2)}MB!`);
                 }
                 
-                fileToReduce = null;
-                document.getElementById('reduce-info').innerText = "No file selected.";
-                document.getElementById('reduce-input').value = '';
+                // Set dynamic filename based on the first file or generic if multiple
+                let outName = state.convert.length === 1 
+                    ? state.convert[0].name.split('.')[0] + ".pdf" 
+                    : "Converted_Document_Batch.pdf";
+                
+                pdf.save(outName);
+                state.convert = []; renderList('convert'); switchScreen('screen-home');
 
             } catch (err) {
-                alert("Error processing PDF.");
+                alert("Error during conversion.");
                 console.error(err);
+            } finally {
+                btn.innerText = originalText; btn.style.opacity = 1;
             }
         }
+
+        // Initialize empty lists on load
+        renderList('merge');
+        renderList('convert');
     </script>
 </body>
 </html>
