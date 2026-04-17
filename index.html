@@ -1,80 +1,108 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-    <meta charset='UTF-8'>
-    <title>S.I.A Wanted Maker</title>
-    <!-- Fixed Library Links -->
-    <script src='https://cloudflare.com'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.I.A Wanted Poster Generator</title>
+    <script src="https://cloudflare.com"></script>
     <style>
-        body { font-family: sans-serif; background: #222; color: white; text-align: center; padding: 20px; }
-        .setup-box { background: #333; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; }
-        button { background: #d4af37; color: black; font-weight: bold; cursor: pointer; border: none; }
-        #poster { width: 400px; background: #f4ece1; color: #3c2a1a; padding: 20px; border: 15px solid #3c2a1a; margin: 20px auto; display: none; }
-        .photo-area { width: 250px; height: 250px; border: 5px solid #3c2a1a; margin: 20px auto; background-size: cover; background-position: center; }
-        .reward { font-size: 30px; font-weight: bold; color: #7a1d1d; border: 4px dashed #7a1d1d; padding: 5px; }
-        #qrcode { margin-top: 15px; display: flex; justify-content: center; }
-        .download-btn { background: #28a745; color: white; display: none; max-width: 400px; margin: 10px auto; }
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background: #333; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .controls { background: #444; padding: 20px; border-radius: 8px; margin-bottom: 20px; width: 100%; max-width: 600px; box-sizing: border-box; }
+        .controls input, .controls textarea { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+        button { background: #d4af37; border: none; padding: 15px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
+
+        /* Poster Design */
+        #poster { 
+            width: 700px; background: white; color: black; padding: 40px; 
+            box-sizing: border-box; text-align: center; border: 1px solid #ddd;
+        }
+        .header-top { font-size: 80px; font-weight: 900; letter-spacing: -2px; margin: 0; line-height: 0.8; }
+        .header-sub { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .red-line { background: #7a1d1d; color: white; padding: 5px; font-weight: bold; text-transform: uppercase; margin: 10px 0; letter-spacing: 1px; }
+        .target-name { font-size: 40px; font-weight: 900; text-transform: uppercase; margin: 10px 0; border-bottom: 3px solid black; }
+        
+        .main-img { width: 250px; height: 300px; border: 2px solid black; margin: 20px auto; background-size: cover; background-position: center; background-color: #eee; }
+        
+        .description-table { width: 100%; text-align: left; font-size: 14px; border-top: 2px solid black; padding-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .desc-item { border-bottom: 1px solid #ccc; padding: 3px 0; display: flex; justify-content: space-between; }
+        .desc-label { font-weight: bold; }
+
+        .criminal-record { margin-top: 20px; text-align: left; font-size: 14px; }
+        .record-title { font-weight: bold; border-bottom: 2px solid black; display: block; margin-bottom: 5px; }
+        .signature-area { margin-top: 30px; text-align: right; }
+        .sig-font { font-family: 'Brush Script MT', cursive; font-size: 30px; border-bottom: 1px solid black; display: inline-block; min-width: 200px; }
     </style>
 </head>
 <body>
-    <h2>S.I.A Wanted Maker</h2>
-    <div class='setup-box' id='form'>
-        <label style="display:block; margin-bottom:5px;">1. Enter Details:</label>
-        <input type='text' id='name' placeholder='Target Name'>
-        <input type='text' id='reward' placeholder='Reward (e.g. 1000 Pizza)'>
-        <label style="display:block; margin-bottom:5px;">2. Pick Photo (Auto-Generates):</label>
-        <!-- On Ubuntu, just click 'Open' in the file window -->
-        <input type='file' id='fileInput' accept='image/*' onchange='previewPoster()'>
+
+    <div class="controls">
+        <h3>1. Enter S.I.A Intelligence</h3>
+        <input type="text" id="inName" placeholder="Full Name (e.g. EDWARD LEE HOWARD)">
+        <input type="text" id="inCrime" placeholder="Crimes (e.g. ESPIONAGE; PIZZA THEFT)">
+        <input type="file" id="inPhoto" accept="image/*">
+        <textarea id="inRecord" rows="3" placeholder="Criminal Record (e.g. Known for bad jokes and excessive gaming)"></textarea>
+        <button onclick="downloadPoster()">Generate & Download PNG</button>
     </div>
 
-    <div id='poster'>
-        <h3>S.I.A OFFICIAL DOCUMENT</h3>
-        <h1>WANTED</h1>
-        <div class='photo-area' id='photoResult'></div>
-        <div style='font-size: 24px; font-weight: bold;' id='nameResult'></div>
-        <div class='reward' id='rewardResult'></div>
-        <div id='qrcode'></div>
-        <p>SCAN TO SEE CASE FILE</p>
+    <!-- The Hidden Poster for Rendering -->
+    <div id="poster">
+        <div class="header-sub"><span>BY THE</span> <span style="font-size: 60px;">S.I.A</span></div>
+        <h1 class="header-top">WANTED</h1>
+        <div class="red-line" id="outCrime">ESPIONAGE; INTERSTATE FLIGHT; BAD DANCING</div>
+        <div class="target-name" id="outName">NAME PLACEHOLDER</div>
+
+        <div class="main-img" id="outPhoto"></div>
+        <p style="font-size: 12px; margin-top: -10px;">Photograph taken by S.I.A Surveillance</p>
+
+        <div class="description-table">
+            <div>
+                <div class="desc-item"><span class="desc-label">Date of Birth:</span> <span>October 27, 1951</span></div>
+                <div class="desc-item"><span class="desc-label">Height:</span> <span>5' 11"</span></div>
+                <div class="desc-item"><span class="desc-label">Build:</span> <span>Medium</span></div>
+            </div>
+            <div>
+                <div class="desc-item"><span class="desc-label">Hair:</span> <span>Brown</span></div>
+                <div class="desc-item"><span class="desc-label">Eyes:</span> <span>Brown</span></div>
+                <div class="desc-item"><span class="desc-label">Nationality:</span> <span>American</span></div>
+            </div>
+        </div>
+
+        <div class="criminal-record">
+            <span class="record-title">CRIMINAL RECORD / CAUTION</span>
+            <p id="outRecord">HOWARD HAS BEEN CONVICTED OF ASSAULT WITH A DEADLY DOUGHNUT. SHOULD BE CONSIDERED ARMED WITH SARCASM.</p>
+        </div>
+
+        <div class="signature-area">
+            <div class="sig-font">The Chief Silly</div><br>
+            <span style="font-size: 12px; font-weight: bold;">DIRECTOR<br>SILLY INTELLIGENCE AGENCY</span>
+        </div>
     </div>
 
-    <button id="downBtn" class="download-btn" onclick="downloadImage()">Download Poster PNG</button>
+    <script>
+        // Update poster text live as user types
+        document.getElementById('inName').addEventListener('input', (e) => document.getElementById('outName').innerText = e.target.value || "NAME PLACEHOLDER");
+        document.getElementById('inCrime').addEventListener('input', (e) => document.getElementById('outCrime').innerText = e.target.value || "ESPIONAGE; PIZZA THEFT");
+        document.getElementById('inRecord').addEventListener('input', (e) => document.getElementById('outRecord').innerText = e.target.value || "Enter details above...");
 
-<script>
-    function previewPoster() {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onloadend = function() {
-            document.getElementById('photoResult').style.backgroundImage = "url(" + reader.result + ")";
-            document.getElementById('nameResult').innerText = document.getElementById('name').value.toUpperCase() || "THE FUGITIVE";
-            document.getElementById('rewardResult').innerText = "REWARD: " + (document.getElementById('reward').value || "FREE HUGS");
-            
-            // Generate QR Code
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: window.location.href.replace('index.html', 'database.html'),
-                width: 120, height: 120
-            });
-
-            document.getElementById('poster').style.display = 'block';
-            document.getElementById('downBtn').style.display = 'block';
-            document.getElementById('form').style.display = 'none';
-        }
-        reader.readAsDataURL(file);
-    }
-
-    function downloadImage() {
-        html2canvas(document.querySelector("#poster")).then(canvas => {
-            let link = document.createElement('a');
-            link.download = 'sia-wanted-poster.png';
-            link.href = canvas.toDataURL();
-            link.click();
+        // Handle Image Upload
+        document.getElementById('inPhoto').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('outPhoto').style.backgroundImage = `url(${event.target.result})`;
+            };
+            reader.readAsDataURL(e.target.files[0]);
         });
-    }
-</script>
+
+        // Generate and Download
+        function downloadPoster() {
+            const poster = document.getElementById('poster');
+            html2canvas(poster, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'SIA-Wanted-Poster.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+    </script>
 </body>
 </html>
