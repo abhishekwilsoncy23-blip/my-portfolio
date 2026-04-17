@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>S.I.A Case File Generator</title>
-    <!-- Necessary libraries for PDF generation -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
@@ -64,7 +63,6 @@
         <button onclick="savePoster()">GENERATE S.I.A CASE FILE (PDF)</button>
     </div>
 
-    <!-- POSTER CONTENT -->
     <div id="poster">
         <div class="header-sub"><span>BY THE</span> <span style="font-size: 70px;">S.I.A</span></div>
         <h1 class="header-main">WANTED</h1>
