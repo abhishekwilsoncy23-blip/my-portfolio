@@ -2,104 +2,160 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.I.A Wanted Poster Generator</title>
+    <title>S.I.A Case File Generator</title>
+    <!-- Essential for the PNG download -->
     <script src="https://cloudflare.com"></script>
     <style>
-        body { font-family: "Helvetica Neue", Arial, sans-serif; background: #333; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .controls { background: #444; padding: 20px; border-radius: 8px; margin-bottom: 20px; width: 100%; max-width: 600px; box-sizing: border-box; }
-        .controls input, .controls textarea { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
-        button { background: #d4af37; border: none; padding: 15px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-
-        /* Poster Design */
-        #poster { 
-            width: 700px; background: white; color: black; padding: 40px; 
-            box-sizing: border-box; text-align: center; border: 1px solid #ddd;
-        }
-        .header-top { font-size: 80px; font-weight: 900; letter-spacing: -2px; margin: 0; line-height: 0.8; }
-        .header-sub { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .red-line { background: #7a1d1d; color: white; padding: 5px; font-weight: bold; text-transform: uppercase; margin: 10px 0; letter-spacing: 1px; }
-        .target-name { font-size: 40px; font-weight: 900; text-transform: uppercase; margin: 10px 0; border-bottom: 3px solid black; }
+        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        .main-img { width: 250px; height: 300px; border: 2px solid black; margin: 20px auto; background-size: cover; background-position: center; background-color: #eee; }
+        /* Control Panel */
+        .controls { background: #333; padding: 20px; border-radius: 8px; width: 100%; max-width: 850px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #444; }
+        input, textarea { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .full { grid-column: span 3; }
         
-        .description-table { width: 100%; text-align: left; font-size: 14px; border-top: 2px solid black; padding-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .desc-item { border-bottom: 1px solid #ccc; padding: 3px 0; display: flex; justify-content: space-between; }
-        .desc-label { font-weight: bold; }
+        /* Ubuntu-Friendly Drag & Drop */
+        #drop-zone { border: 2px dashed #666; padding: 30px; text-align: center; color: #aaa; grid-column: span 3; cursor: pointer; transition: 0.3s; background: #252525; }
+        #drop-zone.hover { border-color: #d4af37; background: #444; color: #fff; }
+        
+        button { background: #d4af37; color: black; border: none; padding: 15px; font-weight: bold; grid-column: span 3; cursor: pointer; font-size: 18px; margin-top: 10px; }
+        button:hover { background: #f1c40f; }
 
-        .criminal-record { margin-top: 20px; text-align: left; font-size: 14px; }
-        .record-title { font-weight: bold; border-bottom: 2px solid black; display: block; margin-bottom: 5px; }
-        .signature-area { margin-top: 30px; text-align: right; }
-        .sig-font { font-family: 'Brush Script MT', cursive; font-size: 30px; border-bottom: 1px solid black; display: inline-block; min-width: 200px; }
+        /* The Poster (Parody of FBI Layout) */
+        #poster { width: 800px; background: white; color: black; padding: 50px; box-sizing: border-box; border: 1px solid #ddd; position: relative; }
+        .header-main { font-size: 100px; font-weight: 900; letter-spacing: -4px; margin: 0; text-align: center; line-height: 0.8; }
+        .header-sub { display: flex; justify-content: space-between; font-weight: bold; font-size: 22px; }
+        .red-line { background: #7a1d1d; color: white; padding: 8px; font-weight: bold; text-transform: uppercase; margin: 15px 0; text-align: center; letter-spacing: 1px; }
+        .target-name { font-size: 45px; font-weight: 900; text-transform: uppercase; border-bottom: 4px solid black; text-align: center; margin: 10px 0; min-height: 50px; }
+        
+        .photo-area { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+        .main-img { width: 280px; height: 340px; border: 3px solid black; background-size: cover; background-position: center; background-color: #eee; }
+        
+        /* FBI-Style Two Column Data */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; text-align: left; font-size: 14px; border-top: 2px solid black; padding-top: 15px; }
+        .data-row { border-bottom: 1px solid #ccc; padding: 4px 0; display: flex; justify-content: space-between; }
+        .label { font-weight: bold; text-transform: uppercase; }
+
+        .criminal-section { margin-top: 30px; text-align: left; }
+        .section-title { font-weight: bold; border-bottom: 2px solid black; display: block; margin-bottom: 10px; font-size: 16px; }
+        
+        .footer { margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .signature { font-family: 'Brush Script MT', cursive; font-size: 38px; border-bottom: 1px solid black; min-width: 250px; display: inline-block; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h3>1. Enter S.I.A Intelligence</h3>
-        <input type="text" id="inName" placeholder="Full Name (e.g. EDWARD LEE HOWARD)">
-        <input type="text" id="inCrime" placeholder="Crimes (e.g. ESPIONAGE; PIZZA THEFT)">
-        <input type="file" id="inPhoto" accept="image/*">
-        <textarea id="inRecord" rows="3" placeholder="Criminal Record (e.g. Known for bad jokes and excessive gaming)"></textarea>
-        <button onclick="downloadPoster()">Generate & Download PNG</button>
+        <div class="full" style="color: #d4af37; font-weight: bold;">S.I.A INTELLIGENCE INPUT PANEL</div>
+        <input type="text" id="inName" placeholder="Target Full Name">
+        <input type="text" id="inCrime" placeholder="Primary Crimes" class="full">
+        
+        <input type="text" id="inDob" placeholder="Date of Birth">
+        <input type="text" id="inHeight" placeholder="Height">
+        <input type="text" id="inBuild" placeholder="Build">
+        <input type="text" id="inHair" placeholder="Hair Style">
+        <input type="text" id="inEyes" placeholder="Eye Color">
+        <input type="text" id="inNat" placeholder="Nationality">
+        
+        <div id="drop-zone" class="full">DRAG & DROP PHOTO HERE (OR CLICK)</div>
+        <input type="file" id="inPhoto" style="display:none" accept="image/*">
+        
+        <textarea id="inRecord" class="full" rows="3" placeholder="Criminal History / Warnings"></textarea>
+        <button onclick="savePoster()">GENERATE S.I.A CASE FILE (PNG)</button>
     </div>
 
-    <!-- The Hidden Poster for Rendering -->
+    <!-- POSTER CONTENT -->
     <div id="poster">
-        <div class="header-sub"><span>BY THE</span> <span style="font-size: 60px;">S.I.A</span></div>
-        <h1 class="header-top">WANTED</h1>
-        <div class="red-line" id="outCrime">ESPIONAGE; INTERSTATE FLIGHT; BAD DANCING</div>
-        <div class="target-name" id="outName">NAME PLACEHOLDER</div>
+        <div class="header-sub"><span>BY THE</span> <span style="font-size: 70px;">S.I.A</span></div>
+        <h1 class="header-main">WANTED</h1>
+        <div class="red-line" id="outCrime">ESPIONAGE; PIZZA THEFT; BAD DANCING</div>
+        <div class="target-name" id="outName">THE UNKNOWN FUGITIVE</div>
 
-        <div class="main-img" id="outPhoto"></div>
-        <p style="font-size: 12px; margin-top: -10px;">Photograph taken by S.I.A Surveillance</p>
+        <div class="photo-area">
+            <div class="main-img" id="outPhoto"></div>
+            <p style="font-size: 11px; margin-top: 8px; font-weight: bold;">S.I.A SURVEILLANCE PHOTO #882-STUPID</p>
+        </div>
 
-        <div class="description-table">
+        <div class="data-grid">
             <div>
-                <div class="desc-item"><span class="desc-label">Date of Birth:</span> <span>October 27, 1951</span></div>
-                <div class="desc-item"><span class="desc-label">Height:</span> <span>5' 11"</span></div>
-                <div class="desc-item"><span class="desc-label">Build:</span> <span>Medium</span></div>
+                <div class="data-row"><span class="label">Date of Birth:</span> <span id="outDob">Feb 30, 1900</span></div>
+                <div class="data-row"><span class="label">Height:</span> <span id="outHeight">2 Inches</span></div>
+                <div class="data-row"><span class="label">Build:</span> <span id="outBuild">Potato Shaped</span></div>
             </div>
             <div>
-                <div class="desc-item"><span class="desc-label">Hair:</span> <span>Brown</span></div>
-                <div class="desc-item"><span class="desc-label">Eyes:</span> <span>Brown</span></div>
-                <div class="desc-item"><span class="desc-label">Nationality:</span> <span>American</span></div>
+                <div class="data-row"><span class="label">Hair:</span> <span id="outHair">Invisible</span></div>
+                <div class="data-row"><span class="label">Eyes:</span> <span id="outEyes">Laser Beams</span></div>
+                <div class="data-row"><span class="label">Nationality:</span> <span id="outNat">Moon Colony</span></div>
             </div>
         </div>
 
-        <div class="criminal-record">
-            <span class="record-title">CRIMINAL RECORD / CAUTION</span>
-            <p id="outRecord">HOWARD HAS BEEN CONVICTED OF ASSAULT WITH A DEADLY DOUGHNUT. SHOULD BE CONSIDERED ARMED WITH SARCASM.</p>
+        <div class="criminal-section">
+            <span class="section-title">CRIMINAL RECORD / CAUTION</span>
+            <p id="outRecord" style="font-size: 14px;">TARGET IS CONSIDERED EXTREMELY SILLY. KNOWN TO EAT THE LAST SLICE WITHOUT ASKING. DO NOT APPROACH WITHOUT A BOX OF DONUTS.</p>
         </div>
 
-        <div class="signature-area">
-            <div class="sig-font">The Chief Silly</div><br>
-            <span style="font-size: 12px; font-weight: bold;">DIRECTOR<br>SILLY INTELLIGENCE AGENCY</span>
+        <div class="footer">
+            <div style="font-size: 11px; color: #666; text-align: left;">
+                NCIC Wanted Flyer #524<br>
+                S.I.A CLASSIFIED 2026
+            </div>
+            <div style="text-align: right;">
+                <div class="signature">The Chief Silly</div><br>
+                <span style="font-size: 13px; font-weight: bold;">DIRECTOR, SILLY INTELLIGENCE AGENCY</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // Update poster text live as user types
-        document.getElementById('inName').addEventListener('input', (e) => document.getElementById('outName').innerText = e.target.value || "NAME PLACEHOLDER");
-        document.getElementById('inCrime').addEventListener('input', (e) => document.getElementById('outCrime').innerText = e.target.value || "ESPIONAGE; PIZZA THEFT");
-        document.getElementById('inRecord').addEventListener('input', (e) => document.getElementById('outRecord').innerText = e.target.value || "Enter details above...");
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('inPhoto');
 
-        // Handle Image Upload
-        document.getElementById('inPhoto').addEventListener('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.getElementById('outPhoto').style.backgroundImage = `url(${event.target.result})`;
-            };
-            reader.readAsDataURL(e.target.files[0]);
+        // Drag & Drop Logic
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('hover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('hover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('hover');
+            processFile(e.dataTransfer.files[0]);
+        };
+        fileInput.onchange = (e) => processFile(e.target.files[0]);
+
+        function processFile(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('outPhoto').style.backgroundImage = `url(${e.target.result})`;
+                    dropZone.innerText = "✓ PHOTO READY";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Live Editing with Funny Placeholders
+        const mapping = [
+            {in: 'inName', out: 'outName', def: 'THE UNKNOWN FUGITIVE'},
+            {in: 'inCrime', out: 'outCrime', def: 'ESPIONAGE; PIZZA THEFT; BAD DANCING'},
+            {in: 'inDob', out: 'outDob', def: 'Feb 30, 1900'},
+            {in: 'inHeight', out: 'outHeight', def: '2 Inches'},
+            {in: 'inBuild', out: 'outBuild', def: 'Potato Shaped'},
+            {in: 'inHair', out: 'outHair', def: 'Invisible'},
+            {in: 'inEyes', out: 'outEyes', def: 'Laser Beams'},
+            {in: 'inNat', out: 'outNat', def: 'Moon Colony'},
+            {in: 'inRecord', out: 'outRecord', def: 'TARGET IS CONSIDERED EXTREMELY SILLY. KNOWN TO EAT THE LAST SLICE WITHOUT ASKING. DO NOT APPROACH WITHOUT A BOX OF DONUTS.'}
+        ];
+
+        mapping.forEach(item => {
+            document.getElementById(item.in).addEventListener('input', (e) => {
+                document.getElementById(item.out).innerText = e.target.value.toUpperCase() || item.def;
+            });
         });
 
-        // Generate and Download
-        function downloadPoster() {
-            const poster = document.getElementById('poster');
-            html2canvas(poster, { scale: 2 }).then(canvas => {
+        // Download PNG
+        function savePoster() {
+            html2canvas(document.querySelector("#poster"), { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'SIA-Wanted-Poster.png';
-                link.href = canvas.toDataURL("image/png");
+                link.href = canvas.toDataURL();
                 link.click();
             });
         }
