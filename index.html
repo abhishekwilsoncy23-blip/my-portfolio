@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>S.I.A Case File Generator</title>
-    <!-- Essential for the PNG download -->
+    <!-- Necessary libraries for PDF generation -->
+    <script src="https://cloudflare.com"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
@@ -60,7 +61,7 @@
         <input type="file" id="inPhoto" style="display:none" accept="image/*">
         
         <textarea id="inRecord" class="full" rows="3" placeholder="Criminal History / Warnings"></textarea>
-        <button onclick="savePoster()">GENERATE S.I.A CASE FILE (PNG)</button>
+        <button onclick="savePoster()">GENERATE S.I.A CASE FILE (PDF)</button>
     </div>
 
     <!-- POSTER CONTENT -->
@@ -150,14 +151,28 @@
             });
         });
 
-        // Download PNG
-        function savePoster() {
-            html2canvas(document.querySelector("#poster"), { scale: 2 }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'SIA-Wanted-Poster.png';
-                link.href = canvas.toDataURL();
-                link.click();
+        // Generate PDF
+        async function savePoster() {
+            const { jsPDF } = window.jspdf;
+            const poster = document.querySelector("#poster");
+            
+            // First capture as image
+            const canvas = await html2canvas(poster, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            
+            // Create PDF (A4 size is approx 210x297mm)
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
             });
+
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('SIA-Wanted-Poster.pdf');
         }
     </script>
 </body>
