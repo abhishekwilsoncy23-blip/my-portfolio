@@ -2,259 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secure Image to PDF | 100% Private PDF Merger</title>
-    <meta name="description" content="Convert multiple images to PDF and merge PDF files securely. 100% private, no uploads, works offline on low-end devices.">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanted Poster Prank Maker</title>
+    <script src="https://cloudflare.com"></script>
     <style>
-        body { background: #0a0a0c; color: white; font-family: sans-serif; touch-action: manipulation; }
-        .screen { display: none; flex-direction: column; min-height: 100vh; }
-        .active { display: flex; }
+        body { font-family: 'Courier New', Courier, monospace; background-color: #e0e0e0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: #f4ece1; border: 12px solid #3c2a1a; padding: 30px; max-width: 450px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; color: #3c2a1a; position: relative; }
+        h1 { font-size: 60px; margin: 0; line-height: 1; border-bottom: 5px solid #3c2a1a; padding-bottom: 10px; }
+        h2 { font-size: 24px; margin: 10px 0; letter-spacing: 2px; }
+        .photo-frame { width: 250px; height: 250px; border: 6px solid #3c2a1a; margin: 20px auto; background-color: #ddd; background-size: cover; background-position: center; filter: sepia(0.8) contrast(1.2); }
+        .name-box { font-size: 35px; font-weight: bold; text-transform: uppercase; margin: 10px 0; }
+        .reward-box { font-size: 30px; font-weight: bold; color: #7a1d1d; border: 4px dashed #7a1d1d; padding: 10px; display: inline-block; width: 90%; }
         
-        .list-item { 
-            background: #1a1a20; border: 1px solid #333; border-radius: 12px; 
-            padding: 10px 14px; margin-bottom: 8px; 
-            display: flex; justify-content: space-between; align-items: center; gap: 10px;
-        }
-        .sortable-ghost { opacity: 0.3; background: #3b82f6; }
-        .drag-handle { cursor: grab; padding: 10px; color: #555; }
-        .drag-handle:active { cursor: grabbing; }
+        .qr-section { margin-top: 20px; display: flex; flex-direction: column; align-items: center; display: none; }
+        #qrcode { padding: 10px; background: white; border: 2px solid #3c2a1a; }
+        .scan-text { font-weight: bold; margin-top: 5px; font-size: 14px; }
 
-        /* Loading Spinner */
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            width: 20px; height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block; vertical-align: middle; margin-right: 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .form-overlay { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: left; margin-top: 20px; width: 100%; max-width: 450px; }
+        label { font-weight: bold; display: block; margin-top: 10px; color: #333; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #3c2a1a; color: white; border: none; padding: 15px; width: 100%; margin-top: 20px; font-size: 18px; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .print-btn { background: #7a1d1d; margin-top: 10px; display: none; width: 100%; max-width: 450px; }
+        
+        @media print { .form-overlay, button, .print-btn { display: none !important; } .container { border: 8px solid black; box-shadow: none; } }
     </style>
 </head>
 <body>
 
-    <div id="screen-home" class="screen active p-6 max-w-2xl mx-auto w-full">
-        <h1 class="text-3xl font-black mt-10 mb-2">PDF<span class="text-blue-500">SECURE</span></h1>
-        <p class="text-zinc-500 text-sm mb-8">Fast. Private. Local.</p>
+<div class="container" id="posterContent">
+    <h1>WANTED</h1>
+    <h2>DEAD OR ALIVE</h2>
+    <div class="photo-frame" id="displayPhoto"></div>
+    <div class="name-box" id="displayName">TARGET NAME</div>
+    <div class="reward-box" id="displayReward">REWARD: $1,000,000</div>
+    
+    <div class="qr-section" id="qrContainer">
+        <div id="qrcode"></div>
+        <div class="scan-text">SCAN TO SEE CRIME FILE</div>
+    </div>
+</div>
 
-        <div class="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-4 mb-8 flex items-start gap-3">
-            <i class="fas fa-shield-halved text-blue-400 mt-1"></i>
-            <p class="text-xs text-blue-200 leading-relaxed">
-                <strong>Privacy First:</strong> Your files never leave this phone. Processing happens entirely in your browser's temporary memory.
-            </p>
-        </div>
+<div class="form-overlay" id="inputForm">
+    <label>Photo URL (Right-click image -> Copy Image Address):</label>
+    <input type="text" id="inPhoto" placeholder="Paste link here">
+    <label>Target's Name:</label>
+    <input type="text" id="inName" placeholder="Who is wanted?">
+    <label>Reward Amount:</label>
+    <input type="text" id="inReward" placeholder="e.g. 500 Gold Coins">
+    <label>QR Link (The "Crime File"):</label>
+    <input type="text" id="inLink" value="https://google.com" placeholder="Link when scanned">
+    <button onclick="updatePoster()">Generate Prank Poster</button>
+</div>
+
+<button class="print-btn" id="printBtn" onclick="window.print()">Download / Save PDF</button>
+
+<script>
+    function updatePoster() {
+        const name = document.getElementById('inName').value || "THE FUGITIVE";
+        const reward = document.getElementById('inReward').value || "$0.00";
+        const photo = document.getElementById('inPhoto').value;
+        const link = document.getElementById('inLink').value;
+
+        document.getElementById('displayName').innerText = name;
+        document.getElementById('displayReward').innerText = "REWARD: " + reward;
         
-        <div class="space-y-4">
-            <button onclick="switchScreen('screen-converter')" class="w-full bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-5 active:bg-zinc-800 transition text-left">
-                <div class="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-images text-orange-500 text-xl"></i>
-                </div>
-                <div>
-                    <div class="font-bold">Images to PDF</div>
-                    <div class="text-xs text-zinc-500">Convert JPG/PNG to one PDF</div>
-                </div>
-            </button>
-
-            <button onclick="switchScreen('screen-merger')" class="w-full bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-5 active:bg-zinc-800 transition text-left">
-                <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-layer-group text-emerald-500 text-xl"></i>
-                </div>
-                <div>
-                    <div class="font-bold">Merge PDF</div>
-                    <div class="text-xs text-zinc-500">Combine multiple PDF files</div>
-                </div>
-            </button>
-        </div>
-    </div>
-
-    <div id="screen-converter" class="screen p-5 max-w-2xl mx-auto w-full flex-1">
-        <div class="flex items-center justify-between mb-6">
-            <button onclick="switchScreen('screen-home')" class="text-zinc-400 p-2"><i class="fas fa-arrow-left"></i></button>
-            <h2 class="font-bold text-lg">Images to PDF</h2>
-            <div class="w-10"></div>
-        </div>
-
-        <input type="file" id="img-input" multiple accept="image/*" class="hidden" onchange="addFiles(event, 'convert')">
-        <button onclick="document.getElementById('img-input').click()" class="bg-blue-600/10 border-2 border-dashed border-blue-600/30 p-8 rounded-2xl text-center mb-4 active:bg-blue-600/20 transition w-full">
-            <i class="fas fa-file-image text-2xl text-blue-500 mb-2"></i><br>
-            <span class="text-blue-400 font-bold">Select Multiple Images</span>
-        </button>
-
-        <p class="text-[10px] text-zinc-500 text-center mb-4 uppercase tracking-widest">Hold & Drag <i class="fas fa-grip-lines mx-1"></i> to change order</p>
-
-        <div id="convert-list" class="flex-1 overflow-y-auto mb-20 space-y-2"></div>
-
-        <div class="fixed bottom-0 left-0 right-0 p-5 bg-black/80 backdrop-blur-md">
-            <button id="btn-convert" onclick="executeConvert()" class="w-full bg-blue-600 py-4 rounded-xl font-bold shadow-lg shadow-blue-900/40 disabled:opacity-50">
-                GENERATE PDF
-            </button>
-        </div>
-    </div>
-
-    <div id="screen-merger" class="screen p-5 max-w-2xl mx-auto w-full flex-1">
-        <div class="flex items-center justify-between mb-6">
-            <button onclick="switchScreen('screen-home')" class="text-zinc-400 p-2"><i class="fas fa-arrow-left"></i></button>
-            <h2 class="font-bold text-lg">Merge PDFs</h2>
-            <div class="w-10"></div>
-        </div>
-
-        <input type="file" id="pdf-input" multiple accept=".pdf" class="hidden" onchange="addFiles(event, 'merge')">
-        <button onclick="document.getElementById('pdf-input').click()" class="bg-emerald-600/10 border-2 border-dashed border-emerald-600/30 p-8 rounded-2xl text-center mb-4 active:bg-emerald-600/20 transition w-full">
-            <i class="fas fa-file-pdf text-2xl text-emerald-500 mb-2"></i><br>
-            <span class="text-emerald-400 font-bold">Add PDF Files</span>
-        </button>
-
-        <div id="merge-list" class="flex-1 overflow-y-auto mb-20 space-y-2"></div>
-
-        <div class="fixed bottom-0 left-0 right-0 p-5 bg-black/80 backdrop-blur-md">
-            <button id="btn-merge" onclick="executeMerge()" class="w-full bg-emerald-600 py-4 rounded-xl font-bold shadow-lg shadow-emerald-900/40">
-                MERGE NOW
-            </button>
-        </div>
-    </div>
-
-    <script>
-        let state = { merge: [], convert: [] };
-        let sortables = { merge: null, convert: null };
-
-        function switchScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            window.scrollTo(0,0);
+        if(photo) {
+            document.getElementById('displayPhoto').style.backgroundImage = "url('" + photo + "')";
         }
 
-        function addFiles(event, type) {
-            const newFiles = Array.from(event.target.files);
-            state[type] = state[type].concat(newFiles);
-            renderList(type);
-            event.target.value = '';
-        }
+        // Generate QR Code
+        document.getElementById('qrcode').innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), {
+            text: link,
+            width: 100,
+            height: 100
+        });
 
-        function removeFile(index, type) {
-            state[type].splice(index, 1);
-            renderList(type);
-        }
-
-        function renderList(type) {
-            const listContainer = document.getElementById(`${type}-list`);
-            listContainer.innerHTML = '';
-
-            state[type].forEach((file, index) => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div class="drag-handle"><i class="fas fa-grip-lines"></i></div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-medium truncate">${file.name}</div>
-                        <div class="text-[10px] text-zinc-500">${(file.size/1024/1024).toFixed(2)} MB</div>
-                    </div>
-                    <button onclick="removeFile(${index}, '${type}')" class="p-2 text-zinc-600 active:text-red-500">
-                        <i class="fas fa-trash-can"></i>
-                    </button>
-                `;
-                listContainer.appendChild(div);
-            });
-
-            if(sortables[type]) sortables[type].destroy();
-            sortables[type] = new Sortable(listContainer, {
-                handle: '.drag-handle',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: (evt) => {
-                    const movedItem = state[type].splice(evt.oldIndex, 1)[0];
-                    state[type].splice(evt.newIndex, 0, movedItem);
-                    renderList(type); // Reset indices
-                }
-            });
-        }
-
-        // --- THE RAM-OPTIMIZED CONVERTER ---
-        async function executeConvert() {
-            if (state.convert.length === 0) return;
-            const btn = document.getElementById('btn-convert');
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> BUILDING PDF...`;
-
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ format: 'a4', unit: 'mm', compress: true });
-
-            try {
-                for (let i = 0; i < state.convert.length; i++) {
-                    const file = state.convert[i];
-                    
-                    // Process one image at a time to save RAM
-                    const imgData = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
-
-                    const imgProps = pdf.getImageProperties(imgData);
-                    const pdfW = pdf.internal.pageSize.getWidth();
-                    const pdfH = pdf.internal.pageSize.getHeight();
-                    
-                    const ratio = Math.min(pdfW / imgProps.width, pdfH / imgProps.height);
-                    const w = imgProps.width * ratio;
-                    const h = imgProps.height * ratio;
-
-                    if (i > 0) pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', (pdfW - w) / 2, (pdfH - h) / 2, w, h, undefined, 'FAST');
-                    
-                    // CRITICAL: Suggest to the browser that we are done with this large string
-                    // to help Garbage Collection on 2GB devices
-                }
-
-                pdf.save(`Images_${Date.now()}.pdf`);
-                state.convert = [];
-                renderList('convert');
-                switchScreen('screen-home');
-            } catch (e) {
-                alert("Memory Error: Please try fewer images at once.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "GENERATE PDF";
-            }
-        }
-
-        // --- SIMPLE MERGER ---
-        async function executeMerge() {
-            if (state.merge.length < 2) return alert("Select at least 2 PDFs");
-            const btn = document.getElementById('btn-merge');
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> MERGING...`;
-
-            try {
-                const mergedPdf = await PDFLib.PDFDocument.create();
-                for (const file of state.merge) {
-                    const bytes = await file.arrayBuffer();
-                    const pdf = await PDFLib.PDFDocument.load(bytes);
-                    const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-                    pages.forEach(p => mergedPdf.addPage(p));
-                }
-                const pdfBytes = await mergedPdf.save();
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = "Merged_Document.pdf";
-                link.click();
-
-                state.merge = [];
-                renderList('merge');
-                switchScreen('screen-home');
-            } catch (e) {
-                alert("Error merging PDFs.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "MERGE NOW";
-            }
-        }
-    </script>
+        document.getElementById('qrContainer').style.display = 'flex';
+        document.getElementById('inputForm').style.display = 'none';
+        document.getElementById('printBtn').style.display = 'block';
+    }
+</script>
 </body>
 </html>
