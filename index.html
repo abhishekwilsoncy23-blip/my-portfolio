@@ -1,83 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset='UTF-8'>
     <title>S.I.A Wanted Maker</title>
-    <!-- Library to turn HTML into a downloadable Image -->
-    <script src="https://cloudflare.com"></script>
+    <!-- Include QR and image libraries -->
+    <script src='https://cloudflare.com'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script>
     <style>
-        body { font-family: 'Arial', sans-serif; background: #222; color: white; text-align: center; padding: 20px; }
-        .setup-box { background: #333; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; border: 2px solid #444; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #222; color: white; text-align: center; padding: 20px; }
+        .setup-box { background: #333; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; }
         button { background: #d4af37; color: black; font-weight: bold; cursor: pointer; }
-        
-        /* The Poster Design */
-        #poster { 
-            width: 400px; background: #f4ece1; color: #3c2a1a; padding: 20px; 
-            border: 15px solid #3c2a1a; margin: 20px auto; display: none;
-            position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .sia-logo { font-weight: bold; border: 3px solid #3c2a1a; display: inline-block; padding: 5px 10px; margin-bottom: 10px; }
-        h1 { font-size: 50px; margin: 0; border-bottom: 5px solid #3c2a1a; }
-        .photo-area { width: 250px; height: 250px; border: 5px solid #3c2a1a; margin: 20px auto; background-size: cover; background-position: center; filter: sepia(1); }
+        #poster { width: 400px; background: #f4ece1; color: #3c2a1a; padding: 20px; border: 15px solid #3c2a1a; margin: 20px auto; display: none; }
+        .photo-area { width: 250px; height: 250px; border: 5px solid #3c2a1a; margin: 20px auto; background-size: cover; }
         .reward { font-size: 30px; font-weight: bold; color: #7a1d1d; border: 4px dashed #7a1d1d; padding: 5px; }
-        .contact-link { margin-top: 15px; display: block; color: blue; text-decoration: underline; font-size: 14px; }
-        
-        #downloadBtn { display: none; background: #28a745; color: white; max-width: 400px; margin: 10px auto; }
+        #qrcode { margin-top: 15px; display: flex; justify-content: center; }
     </style>
 </head>
 <body>
-
-    <h2>Silly Intelligence Agency (S.I.A)</h2>
-    <p>Create a Prank Wanted Poster</p>
-
-    <div class="setup-box" id="form">
-        <label>Upload Friend's Photo:</label>
-        <input type="file" id="fileInput" accept="image/*">
-        <input type="text" id="name" placeholder="Target Name">
-        <input type="text" id="reward" placeholder="Reward (e.g. 500 Pizzas)">
-        <button onclick="previewPoster()">Generate Poster</button>
+    <h2>S.I.A Wanted Maker</h2>
+    <div class='setup-box' id='form'>
+        <input type='file' id='fileInput' accept='image/*'>
+        <input type='text' id='name' placeholder='Target Name'>
+        <input type='text' id='reward' placeholder='Reward Amount'>
+        <button onclick='previewPoster()'>Generate Poster</button>
     </div>
 
-    <!-- This is the part that will be turned into an image -->
-    <div id="poster">
-        <div class="sia-logo">S.I.A OFFICIAL DOCUMENT</div>
+    <div id='poster'>
+        <h3>S.I.A OFFICIAL DOCUMENT</h3>
         <h1>WANTED</h1>
-        <p>FOR EXTREME STUPIDITY</p>
-        <div class="photo-area" id="photoResult"></div>
-        <div style="font-size: 24px; font-weight: bold;" id="nameResult">NAME HERE</div>
-        <div class="reward" id="rewardResult">REWARD: $0.00</div>
-        <p class="contact-link">If found, scan QR or visit: bit.ly/SIA-REPORT</p>
+        <div class='photo-area' id='photoResult'></div>
+        <div style='font-size: 24px; font-weight: bold;' id='nameResult'></div>
+        <div class='reward' id='rewardResult'></div>
+        <div id='qrcode'></div> <!-- QR Code container -->
+        <p>SCAN TO SEE CASE FILE</p>
     </div>
-
-    <button id="downloadBtn" onclick="downloadPoster()">Step 2: Download Image to Share</button>
 
 <script>
     function previewPoster() {
         const file = document.getElementById('fileInput').files[0];
         const reader = new FileReader();
-
         reader.onloadend = function() {
             document.getElementById('photoResult').style.backgroundImage = "url(" + reader.result + ")";
             document.getElementById('nameResult').innerText = document.getElementById('name').value.toUpperCase();
             document.getElementById('rewardResult').innerText = "REWARD: " + document.getElementById('reward').value;
             
-            document.getElementById('poster').style.display = "block";
-            document.getElementById('downloadBtn').style.display = "block";
-            document.getElementById('form').style.display = "none";
+            // Generate QR Code linking to database.html
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href.replace('index.html', 'database.html'),
+                width: 100, height: 100
+            });
+            document.getElementById('poster').style.display = 'block';
+            document.getElementById('form').style.display = 'none';
         }
-
-        if (file) { reader.readAsDataURL(file); } else { alert("Please upload a photo first!"); }
-    }
-
-    function downloadPoster() {
-        html2canvas(document.querySelector("#poster")).then(canvas => {
-            let link = document.createElement('a');
-            link.download = 'wanted-poster.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        });
+        if (file) reader.readAsDataURL(file);
     }
 </script>
 </body>
