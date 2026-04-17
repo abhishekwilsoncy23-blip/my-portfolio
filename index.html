@@ -3,27 +3,30 @@
 <head>
     <meta charset='UTF-8'>
     <title>S.I.A Wanted Maker</title>
-    <!-- Include QR and image libraries -->
+    <!-- Fixed Library Links -->
     <script src='https://cloudflare.com'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script>
     <style>
         body { font-family: sans-serif; background: #222; color: white; text-align: center; padding: 20px; }
         .setup-box { background: #333; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; }
-        button { background: #d4af37; color: black; font-weight: bold; cursor: pointer; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; }
+        button { background: #d4af37; color: black; font-weight: bold; cursor: pointer; border: none; }
         #poster { width: 400px; background: #f4ece1; color: #3c2a1a; padding: 20px; border: 15px solid #3c2a1a; margin: 20px auto; display: none; }
-        .photo-area { width: 250px; height: 250px; border: 5px solid #3c2a1a; margin: 20px auto; background-size: cover; }
+        .photo-area { width: 250px; height: 250px; border: 5px solid #3c2a1a; margin: 20px auto; background-size: cover; background-position: center; }
         .reward { font-size: 30px; font-weight: bold; color: #7a1d1d; border: 4px dashed #7a1d1d; padding: 5px; }
         #qrcode { margin-top: 15px; display: flex; justify-content: center; }
+        .download-btn { background: #28a745; color: white; display: none; max-width: 400px; margin: 10px auto; }
     </style>
 </head>
 <body>
     <h2>S.I.A Wanted Maker</h2>
     <div class='setup-box' id='form'>
-        <input type='file' id='fileInput' accept='image/*'>
+        <label style="display:block; margin-bottom:5px;">1. Enter Details:</label>
         <input type='text' id='name' placeholder='Target Name'>
-        <input type='text' id='reward' placeholder='Reward Amount'>
-        <button onclick='previewPoster()'>Generate Poster</button>
+        <input type='text' id='reward' placeholder='Reward (e.g. 1000 Pizza)'>
+        <label style="display:block; margin-bottom:5px;">2. Pick Photo (Auto-Generates):</label>
+        <!-- On Ubuntu, just click 'Open' in the file window -->
+        <input type='file' id='fileInput' accept='image/*' onchange='previewPoster()'>
     </div>
 
     <div id='poster'>
@@ -32,29 +35,45 @@
         <div class='photo-area' id='photoResult'></div>
         <div style='font-size: 24px; font-weight: bold;' id='nameResult'></div>
         <div class='reward' id='rewardResult'></div>
-        <div id='qrcode'></div> <!-- QR Code container -->
+        <div id='qrcode'></div>
         <p>SCAN TO SEE CASE FILE</p>
     </div>
 
+    <button id="downBtn" class="download-btn" onclick="downloadImage()">Download Poster PNG</button>
+
 <script>
     function previewPoster() {
-        const file = document.getElementById('fileInput').files[0];
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) return;
+
         const reader = new FileReader();
         reader.onloadend = function() {
             document.getElementById('photoResult').style.backgroundImage = "url(" + reader.result + ")";
-            document.getElementById('nameResult').innerText = document.getElementById('name').value.toUpperCase();
-            document.getElementById('rewardResult').innerText = "REWARD: " + document.getElementById('reward').value;
+            document.getElementById('nameResult').innerText = document.getElementById('name').value.toUpperCase() || "THE FUGITIVE";
+            document.getElementById('rewardResult').innerText = "REWARD: " + (document.getElementById('reward').value || "FREE HUGS");
             
-            // Generate QR Code linking to database.html
+            // Generate QR Code
             document.getElementById('qrcode').innerHTML = "";
             new QRCode(document.getElementById("qrcode"), {
                 text: window.location.href.replace('index.html', 'database.html'),
-                width: 100, height: 100
+                width: 120, height: 120
             });
+
             document.getElementById('poster').style.display = 'block';
+            document.getElementById('downBtn').style.display = 'block';
             document.getElementById('form').style.display = 'none';
         }
-        if (file) reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+    }
+
+    function downloadImage() {
+        html2canvas(document.querySelector("#poster")).then(canvas => {
+            let link = document.createElement('a');
+            link.download = 'sia-wanted-poster.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
     }
 </script>
 </body>
